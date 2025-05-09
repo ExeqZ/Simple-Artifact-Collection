@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Files</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Basevision Corporate Identity */
+    :root {
+      --primary-color: #00529b; /* Basevision blue */
+      --secondary-color: #f39200; /* Basevision orange */
+      --background-color: #f5f5f5; /* Light gray background */
+      --text-color: #333333; /* Dark text */
+      --font-family: 'Arial', sans-serif; /* Basevision font */
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--background-color);
+      color: var(--text-color);
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #003f7d; /* Darker blue for hover */
+    }
+
+    .btn-danger {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background-color: #d97900; /* Darker orange for hover */
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen flex flex-col items-center justify-center">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-4xl">
+      <h1 class="text-3xl font-bold text-center mb-6" style="color: var(--primary-color);">
+        Manage Uploaded Files
+      </h1>
+      <table class="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border border-gray-300 px-4 py-2 text-left">File Name</th>
+            <th class="border border-gray-300 px-4 py-2 text-right">Size (bytes)</th>
+            <th class="border border-gray-300 px-4 py-2 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for file in files %}
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">{{ file.name }}</td>
+            <td class="border border-gray-300 px-4 py-2 text-right">{{ file.size }}</td>
+            <td class="border border-gray-300 px-4 py-2 text-center">
+              <form method="POST" style="display: inline;">
+                <input type="hidden" name="file_to_delete" value="{{ file.name }}">
+                <button type="submit" class="btn-danger px-4 py-2 rounded-lg text-sm font-semibold transition duration-300">
+                  Delete
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <div class="text-center mt-6">
+        <a href="/" class="btn-primary px-4 py-2 rounded-lg text-lg font-semibold transition duration-300">
+          Back to Upload
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

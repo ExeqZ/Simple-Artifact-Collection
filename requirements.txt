@@ -1,3 +1,4 @@
 flask
 azure-storage-blob
 azure-identity
+msal
