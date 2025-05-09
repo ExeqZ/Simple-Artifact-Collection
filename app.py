@@ -5,6 +5,7 @@ import os
 import uuid
 
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
 
 # Get storage account URL and container name from environment variables
 STORAGE_ACCOUNT_URL = os.environ.get("STORAGE_ACCOUNT_URL")
@@ -17,15 +18,19 @@ blob_service_client = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credent
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        file = request.files['file']
-        if file:
-            # Generate a unique blob name
-            blob_name = f"{uuid.uuid4()}_{file.filename}"
-            # Get a blob client
-            blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
-            # Upload the file to Azure Blob Storage
-            blob_client.upload_blob(file.read())
-            return f"Upload successful! File stored as: {blob_name}"
+        try:
+            file = request.files['file']
+            if file:
+                # Generate a unique blob name
+                blob_name = "uploads"
+                # Get a blob client
+                blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
+                # Upload the file to Azure Blob Storage
+                blob_client.upload_blob(file.read())
+                return f"Upload successful! File stored as: {blob_name}"
+        except Exception as e:
+            print(f"Error: {e}")
+            return "An error occurred during file upload.", 500
     return render_template('index.html')
 
 if __name__ == '__main__':
