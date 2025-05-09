@@ -22,7 +22,7 @@ def upload_file():
             file = request.files['file']
             if file:
                 # Generate a unique blob name
-                blob_name = "uploads"
+                blob_name = f"{uuid.uuid4()}_{file.filename}"
                 # Get a blob client
                 blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
                 # Upload the file to Azure Blob Storage
