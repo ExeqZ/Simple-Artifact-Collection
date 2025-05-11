@@ -187,16 +187,26 @@ def view_case(case_id):
     if not session.get("user"):
         return redirect(url_for("login"))
 
-    case = Case.query.get_or_404(case_id)
+    # Fetch the case details from the database
+    cursor = conn.cursor()
+    cursor.execute("SELECT name, container_name FROM Cases WHERE id = ?", (case_id,))
+    case = cursor.fetchone()
+
+    if not case:
+        return "Case not found.", 404
+
+    case_name, container_name = case
+
     try:
         # List blobs in the container
-        container_client = blob_service_client.get_container_client(case.container_name)
+        container_client = blob_service_client.get_container_client(container_name)
         blobs = container_client.list_blobs()
         blob_list = [{"name": blob.name, "size": blob.size} for blob in blobs]
     except Exception as e:
         return f"Error fetching blobs: {e}", 500
 
-    return render_template('case.html', case=case, blobs=blob_list)
+    # Render the case.html template with the case details and blob list
+    return render_template('case.html', case={"name": case_name, "container_name": container_name}, blobs=blob_list)
 
 
 if __name__ == '__main__':
