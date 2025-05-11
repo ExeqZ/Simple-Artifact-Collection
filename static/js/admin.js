@@ -28,10 +28,8 @@ const adminApp = Vue.createApp({
         return;
       }
 
-      const connectionId = this.generateConnectionId(); // Generate connection ID
       const formData = new FormData();
       formData.append('case_name', this.newCaseName);
-      formData.append('connection_id', connectionId);
 
       try {
         const response = await fetch('/admin', {
@@ -39,12 +37,14 @@ const adminApp = Vue.createApp({
           body: formData,
         });
 
+        const result = await response.text(); // Log the response
         if (response.ok) {
           this.message = 'Case created successfully!';
           this.newCaseName = '';
           await this.fetchCases(); // Refresh the case list
         } else {
-          this.message = 'Error creating case.';
+          console.error('Error creating case:', result);
+          this.message = `Error creating case: ${result}`;
         }
       } catch (error) {
         console.error('Error creating case:', error);

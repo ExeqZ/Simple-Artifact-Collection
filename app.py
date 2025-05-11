@@ -174,11 +174,18 @@ def admin_portal():
             )
             conn.commit()
         except Exception as e:
+            print(f"Error creating case or blob container: {e}")  # Add logging
             return f"Error creating case or blob container: {e}", 500
 
     # Fetch all cases
-    cursor.execute("SELECT * FROM Cases")
-    cases = cursor.fetchall()
+    try:
+        cursor.execute("SELECT * FROM Cases")
+        cases = cursor.fetchall()
+        print(f"Cases fetched: {cases}")  # Add logging
+    except Exception as e:
+        print(f"Error fetching cases: {e}")  # Add logging
+        return f"Error fetching cases: {e}", 500
+
     return render_template('admin.html', cases=cases)
 
 
