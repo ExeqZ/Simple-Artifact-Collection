@@ -2,3 +2,4 @@ flask
 msal
 azure-storage-blob
 azure-identity
+pyodbc

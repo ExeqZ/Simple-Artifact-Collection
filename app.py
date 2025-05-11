@@ -2,8 +2,10 @@ from flask import Flask, request, render_template, redirect, session, url_for
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 from msal import ConfidentialClientApplication
+import pyodbc
 import os
 import uuid
+import secrets
 
 app = Flask(__name__)
 app.secret_key = str(uuid.uuid4())  # Secret key for session management
@@ -34,6 +36,22 @@ msal_app = ConfidentialClientApplication(
 credential = DefaultAzureCredential()
 blob_service_client = BlobServiceClient(account_url=STORAGE_ACCOUNT_URL, credential=credential)
 
+# Azure SQL Database connection
+SQL_SERVER = os.environ.get("SQL_SERVER")  # e.g., "your-sql-server.database.windows.net"
+SQL_DATABASE = os.environ.get("SQL_DATABASE")  # e.g., "your-database-name"
+
+# Use Managed Identity to authenticate
+access_token = credential.get_token("https://database.windows.net/").token
+
+connection_string = (
+    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+    f"SERVER={SQL_SERVER};"
+    f"DATABASE={SQL_DATABASE};"
+    f"Authentication=ActiveDirectoryMsi;"
+)
+
+conn = pyodbc.connect(connection_string, attrs_before={"AccessToken": access_token})
+
 
 @app.route('/')
 def index():
@@ -42,29 +60,31 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if request.method == 'POST':
-        try:
-            files = request.files.getlist('file')  # Get all uploaded files
-            if not files:
-                return "No files uploaded.", 400
+    secret = request.form.get('secret')
+    if not secret:
+        return "Secret is required.", 400
 
-            uploaded_files = []
-            for file in files:
-                if file:
-                    # Generate a unique blob name (optional, remove uuid if overwriting by name)
-                    blob_name = f"{file.filename}"
-                    # Get a blob client
-                    blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=blob_name)
-                    # Upload the file to Azure Blob Storage with overwrite enabled
-                    blob_client.upload_blob(file.read(), overwrite=True)
-                    uploaded_files.append(blob_name)
+    # Find the case by secret
+    case = Case.query.filter_by(secret=secret).first()
+    if not case:
+        return "Invalid secret.", 400
 
-            return f"Upload successful! Files stored: {', '.join(uploaded_files)}"
-        except Exception as e:
-            # Log the error to the console
-            print(f"Error: {e}")
-            # Return the error message in the response for debugging
-            return f"An error occurred during file upload: {e}", 500
+    try:
+        files = request.files.getlist('file')
+        if not files:
+            return "No files uploaded.", 400
+
+        uploaded_files = []
+        for file in files:
+            if file:
+                blob_name = f"{file.filename}"
+                blob_client = blob_service_client.get_blob_client(container=case.container_name, blob=blob_name)
+                blob_client.upload_blob(file.read(), overwrite=True)
+                uploaded_files.append(blob_name)
+
+        return f"Upload successful! Files stored: {', '.join(uploaded_files)}"
+    except Exception as e:
+        return f"An error occurred during file upload: {e}", 500
 
 
 @app.route('/manage', methods=['GET', 'POST'])
@@ -120,6 +140,50 @@ def logout():
     return redirect(
         f"{AUTHORITY}/oauth2/v2.0/logout?post_logout_redirect_uri={url_for('index', _external=True)}"
     )
+
+
+@app.route('/admin', methods=['GET', 'POST'])
+def admin_portal():
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        # Create a new case
+        case_name = request.form.get('case_name')
+        if not case_name:
+            return "Case name is required.", 400
+
+        # Generate a unique container name and secret
+        container_name = f"case-{uuid.uuid4().hex[:8]}"
+        secret = secrets.token_hex(16)
+
+        # Save the case to Azure SQL
+        cursor.execute(
+            "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
+            (case_name, container_name, secret),
+        )
+        conn.commit()
+
+    # Fetch all cases
+    cursor.execute("SELECT * FROM Cases")
+    cases = cursor.fetchall()
+    return render_template('admin.html', cases=cases)
+
+
+@app.route('/admin/case/<int:case_id>')
+def view_case(case_id):
+    if not session.get("user"):
+        return redirect(url_for("login"))
+
+    case = Case.query.get_or_404(case_id)
+    try:
+        # List blobs in the container
+        container_client = blob_service_client.get_container_client(case.container_name)
+        blobs = container_client.list_blobs()
+        blob_list = [{"name": blob.name, "size": blob.size} for blob in blobs]
+    except Exception as e:
+        return f"Error fetching blobs: {e}", 500
+
+    return render_template('case.html', case=case, blobs=blob_list)
 
 
 if __name__ == '__main__':
