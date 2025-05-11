@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, redirect, session, url_for
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 from msal import ConfidentialClientApplication
-import pyodbc
+import pyodbc, struct
 import os
 import uuid
 import secrets
@@ -41,16 +41,18 @@ SQL_SERVER = os.environ.get("SQL_SERVER")  # e.g., "your-sql-server.database.win
 SQL_DATABASE = os.environ.get("SQL_DATABASE")  # e.g., "your-database-name"
 
 # Use Managed Identity to authenticate
-access_token = credential.get_token("https://database.windows.net/").token
+access_token = credential.get_token("https://database.windows.net/").token.encode("UTF-16-LE")
+token_struct = struct.pack(f'<I{len(access_token)}s', len(access_token), access_token)
+SQL_COPT_SS_ACCESS_TOKEN = 1256
 
 connection_string = (
-    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
+    f"DRIVER={{ODBC Driver 18 for SQL Server}};"
     f"SERVER={SQL_SERVER};"
     f"DATABASE={SQL_DATABASE};"
     f"Authentication=ActiveDirectoryMsi;"
 )
 
-conn = pyodbc.connect(connection_string, attrs_before={1256: access_token})
+conn = pyodbc.connect(connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
 
 
 @app.route('/')
