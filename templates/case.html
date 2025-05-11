@@ -5,7 +5,10 @@
 {% block content %}
 <h2>Files in Container: {{ case.container_name }}</h2>
 <ul class="file-list">
-  <li v-for="blob in blobs" :key="blob">{{ blob }}</li>
+  {% for blob in blobs %}
+  <li>
+    <strong>{{ blob.name }}</strong> ({{ blob.size }} bytes)
+  </li>
+  {% endfor %}
 </ul>
-<script src="{{ url_for('static', filename='js/case.js') }}"></script>
 {% endblock %}
