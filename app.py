@@ -50,7 +50,7 @@ connection_string = (
     f"Authentication=ActiveDirectoryMsi;"
 )
 
-conn = pyodbc.connect(connection_string, attrs_before={"AccessToken": access_token})
+conn = pyodbc.connect(connection_string, attrs_before={1256: access_token})
 
 
 @app.route('/')
