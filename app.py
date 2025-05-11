@@ -16,7 +16,7 @@ app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB
 
 # Get storage account URL and container name from environment variables
 STORAGE_ACCOUNT_URL = os.environ.get("STORAGE_ACCOUNT_URL")
-CONTAINER_NAME = "uploads"
+CONTAINER_NAME = "uploads"  # Default container name
 
 # Microsoft Entra ID (Azure AD) configuration
 CLIENT_ID = os.environ.get("CLIENT_ID")  # Application (client) ID
