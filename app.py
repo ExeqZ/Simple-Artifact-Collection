@@ -2,7 +2,8 @@ from flask import Flask, request, render_template, redirect, session, url_for
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 from msal import ConfidentialClientApplication
-import pyodbc, struct
+import pyodbc
+import struct
 import os
 import uuid
 import secrets
