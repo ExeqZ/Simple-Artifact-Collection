@@ -15,7 +15,7 @@
 
   <h2>Existing Cases</h2>
   <ul class="case-list">
-    <li v-for="case in cases" :key="case">{{ case }}</li>
+    <li v-for="caseItem in cases" :key="caseItem">{{ caseItem }}</li>
   </ul>
 </div>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
