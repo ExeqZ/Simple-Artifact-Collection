@@ -60,14 +60,18 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    secret = request.form.get('secret')
-    if not secret:
-        return "Secret is required.", 400
+    case_id = request.form.get('caseId')  # Get the case ID from the form
+    container_name = CONTAINER_NAME  # Default to the "uploads" container
 
-    # Find the case by secret
-    case = Case.query.filter_by(secret=secret).first()
-    if not case:
-        return "Invalid secret.", 400
+    if case_id:
+        # Find the case by ID
+        cursor = conn.cursor()
+        cursor.execute("SELECT container_name FROM Cases WHERE id = ?", (case_id,))
+        result = cursor.fetchone()
+        if result:
+            container_name = result[0]  # Use the container name for the specified case
+        else:
+            return "Invalid Case ID.", 400
 
     try:
         files = request.files.getlist('file')
@@ -78,11 +82,11 @@ def upload_file():
         for file in files:
             if file:
                 blob_name = f"{file.filename}"
-                blob_client = blob_service_client.get_blob_client(container=case.container_name, blob=blob_name)
+                blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
                 blob_client.upload_blob(file.read(), overwrite=True)
                 uploaded_files.append(blob_name)
 
-        return f"Upload successful! Files stored: {', '.join(uploaded_files)}"
+        return f"Upload successful! Files stored in container '{container_name}': {', '.join(uploaded_files)}"
     except Exception as e:
         return f"An error occurred during file upload: {e}", 500
 
@@ -156,12 +160,18 @@ def admin_portal():
         container_name = f"case-{uuid.uuid4().hex[:8]}"
         secret = secrets.token_hex(16)
 
-        # Save the case to Azure SQL
-        cursor.execute(
-            "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
-            (case_name, container_name, secret),
-        )
-        conn.commit()
+        try:
+            # Create the blob container in Azure Storage
+            blob_service_client.create_container(container_name)
+
+            # Save the case to Azure SQL
+            cursor.execute(
+                "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
+                (case_name, container_name, secret),
+            )
+            conn.commit()
+        except Exception as e:
+            return f"Error creating case or blob container: {e}", 500
 
     # Fetch all cases
     cursor.execute("SELECT * FROM Cases")
