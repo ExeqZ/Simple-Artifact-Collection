@@ -47,7 +47,7 @@ token_struct = struct.pack(f'<I{len(access_token)}s', len(access_token), access_
 SQL_COPT_SS_ACCESS_TOKEN = 1256
 
 connection_string = (
-    f"DRIVER={{ODBC Driver 18 for SQL Server}};"
+    f"DRIVER={{ODBC Driver 17 for SQL Server}};"
     f"SERVER={SQL_SERVER};"
     f"DATABASE={SQL_DATABASE};"
     f"Authentication=ActiveDirectoryMsi;"
