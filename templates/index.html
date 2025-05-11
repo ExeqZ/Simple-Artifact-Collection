@@ -3,14 +3,16 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<form @submit.prevent="uploadFiles">
-  <label for="connectionId">Connection ID:</label>
-  <input type="text" id="connectionId" v-model="connectionId" placeholder="Enter Connection ID" required>
-  <input type="file" name="file" multiple @change="handleFileChange">
-  <button class="btn-primary" type="submit">Upload</button>
-</form>
-<div v-if="message" :class="{'success': success, 'error': !success}" class="message">
-  {{ message }}
+<div id="app">
+  <form @submit.prevent="uploadFiles">
+    <label for="connectionId">Connection ID:</label>
+    <input type="text" id="connectionId" v-model="connectionId" placeholder="Enter Connection ID" required>
+    <input type="file" name="file" multiple @change="handleFileChange">
+    <button class="btn-primary" type="submit">Upload</button>
+  </form>
+  <div v-if="message" :class="{'success': success, 'error': !success}" class="message">
+    {{ message }}
+  </div>
 </div>
 <script src="{{ url_for('static', filename='js/index.js') }}"></script>
 {% endblock %}
