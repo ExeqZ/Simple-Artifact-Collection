@@ -61,21 +61,20 @@ conn = pyodbc.connect(connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN:
 def index():
     return render_template('index.html')
 
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    case_id = request.form.get('caseId')  # Get the case ID from the form
+    connection_id = request.form.get('connectionId')  # Get the connection ID from the form
     container_name = CONTAINER_NAME  # Default to the "uploads" container
 
-    if case_id:
-        # Find the case by ID
+    if connection_id:
+        # Find the case by connection ID
         cursor = conn.cursor()
-        cursor.execute("SELECT container_name FROM Cases WHERE id = ?", (case_id,))
+        cursor.execute("SELECT container_name FROM Cases WHERE secret = ?", (connection_id,))
         result = cursor.fetchone()
         if result:
             container_name = result[0]  # Use the container name for the specified case
         else:
-            return "Invalid Case ID.", 400
+            return "Invalid Connection ID.", 400
 
     try:
         files = request.files.getlist('file')

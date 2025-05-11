@@ -2,7 +2,7 @@ const app = Vue.createApp({
   data() {
     return {
       files: [],
-      caseId: '', // New field for case ID
+      connectionId: '', // Updated field name
       message: '',
       success: false,
     };
@@ -20,7 +20,7 @@ const app = Vue.createApp({
 
       const formData = new FormData();
       this.files.forEach(file => formData.append('file', file));
-      formData.append('caseId', this.caseId); // Include the case ID
+      formData.append('connectionId', this.connectionId); // Updated field name
 
       try {
         const response = await fetch('/upload', {

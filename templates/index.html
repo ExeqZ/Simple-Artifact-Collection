@@ -4,8 +4,8 @@
 
 {% block content %}
 <form @submit.prevent="uploadFiles">
-  <label for="caseId">Case ID (optional):</label>
-  <input type="text" id="caseId" v-model="caseId" placeholder="Enter Case ID">
+  <label for="connectionId">Connection ID:</label>
+  <input type="text" id="connectionId" v-model="connectionId" placeholder="Enter Connection ID" required>
   <input type="file" name="file" multiple @change="handleFileChange">
   <button class="btn-primary" type="submit">Upload</button>
 </form>
