@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template, redirect, session, url_for
-from flask_oauthlib.client import OAuth
 from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
+from msal import ConfidentialClientApplication
 import os
 import uuid
 
@@ -20,24 +20,14 @@ CLIENT_ID = os.environ.get("CLIENT_ID")  # Application (client) ID
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")  # Client secret
 TENANT_ID = os.environ.get("TENANT_ID")  # Directory (tenant) ID
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
-REDIRECT_URI = "/getAToken"  # Redirect URI path
+REDIRECT_PATH = "/getAToken"  # Redirect URI path
 SCOPE = ["User.Read"]  # Permissions to request
 
-# OAuth configuration
-oauth = OAuth(app)
-microsoft = oauth.remote_app(
-    'microsoft',
-    consumer_key=CLIENT_ID,
-    consumer_secret=CLIENT_SECRET,
-    request_token_params={
-        'scope': ' '.join(SCOPE),
-        'response_type': 'code',
-    },
-    base_url='https://graph.microsoft.com/v1.0/',
-    request_token_url=None,
-    access_token_method='POST',
-    access_token_url=f'{AUTHORITY}/oauth2/v2.0/token',
-    authorize_url=f'{AUTHORITY}/oauth2/v2.0/authorize',
+# MSAL Confidential Client
+msal_app = ConfidentialClientApplication(
+    CLIENT_ID,
+    authority=AUTHORITY,
+    client_credential=CLIENT_SECRET,
 )
 
 # Authenticate with Managed Identity
@@ -79,8 +69,8 @@ def upload_file():
 
 @app.route('/manage', methods=['GET', 'POST'])
 def manage_files():
-    if 'microsoft_token' not in session:
-        return redirect(url_for('login'))
+    if not session.get("user"):
+        return redirect(url_for("login"))
 
     try:
         # Get a list of blobs in the container
@@ -102,31 +92,34 @@ def manage_files():
         return f"An error occurred while managing files: {e}", 500
 
 
-@app.route('/login')
+@app.route("/login")
 def login():
-    return microsoft.authorize(callback=url_for('authorized', _external=True))
+    # Redirect to Microsoft Entra ID login page
+    auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=url_for("authorized", _external=True))
+    return redirect(auth_url)
 
 
-@app.route(REDIRECT_URI)
+@app.route(REDIRECT_PATH)
 def authorized():
-    response = microsoft.authorized_response()
-    if response is None or response.get('access_token') is None:
-        return f"Access denied: {request.args.get('error')} - {request.args.get('error_description')}", 403
+    # Handle the redirect from Microsoft Entra ID
+    code = request.args.get("code")
+    if code:
+        result = msal_app.acquire_token_by_authorization_code(
+            code,
+            scopes=SCOPE,
+            redirect_uri=url_for("authorized", _external=True),
+        )
+        if "access_token" in result:
+            session["user"] = result.get("id_token_claims")
+    return redirect(url_for("manage_files"))
 
-    # Store the token in the session
-    session['microsoft_token'] = (response['access_token'], '')
-    return redirect(url_for('manage_files'))
 
-
-@app.route('/logout')
+@app.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for('index'))
-
-
-@microsoft.tokengetter
-def get_microsoft_oauth_token():
-    return session.get('microsoft_token')
+    return redirect(
+        f"{AUTHORITY}/oauth2/v2.0/logout?post_logout_redirect_uri={url_for('index', _external=True)}"
+    )
 
 
 if __name__ == '__main__':
