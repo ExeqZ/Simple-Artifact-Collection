@@ -1,26 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-</head>
-<body>
-  <header>
-    <h1>Welcome to the File Upload App</h1>
-  </header>
-  <main id="app">
-    <form @submit.prevent="uploadFiles">
-      <input type="file" name="file" multiple @change="handleFileChange">
-      <button class="btn-primary" type="submit">Upload</button>
-    </form>
-    <div v-if="message" :class="{'success': success, 'error': !success}" class="message">
-      {{ message }}
-    </div>
-  </main>
-  <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<form @submit.prevent="uploadFiles">
+  <input type="file" name="file" multiple @change="handleFileChange">
+  <button class="btn-primary" type="submit">Upload</button>
+</form>
+<div v-if="message" :class="{'success': success, 'error': !success}" class="message">
+  {{ message }}
+</div>
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

@@ -81,3 +81,25 @@ header {
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
 }
+
+.menu {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background-color: var(--primary-color);
+}
+
+.menu li {
+    margin: 0;
+    padding: 10px 20px;
+}
+
+.menu li a {
+    color: white;
+    text-decoration: none;
+}
+
+.menu li a:hover {
+    text-decoration: underline;
+}

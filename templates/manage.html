@@ -1,26 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manage Files</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-</head>
-<body>
-  <header>
-    <h1>Manage Files</h1>
-  </header>
-  <main id="app">
-    <ul class="file-list">
-      <li v-for="file in files" :key="file.name">
-        <svg>...</svg>
-        {{ file.name }} ({{ file.size }} bytes)
-        <button class="btn-danger" @click="deleteFile(file.name)">Delete</button>
-      </li>
-    </ul>
-  </main>
-  <script src="{{ url_for('static', filename='js/manage.js') }}"></script>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Manage Files{% endblock %}
+
+{% block content %}
+<ul class="file-list">
+  <li v-for="file in files" :key="file.name">
+    <svg>...</svg>
+    {{ file.name }} ({{ file.size }} bytes)
+    <button class="btn-danger" @click="deleteFile(file.name)">Delete</button>
+  </li>
+</ul>
+<script src="{{ url_for('static', filename='js/manage.js') }}"></script>
+{% endblock %}
