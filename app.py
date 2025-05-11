@@ -64,6 +64,7 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     connection_id = request.form.get('connectionId')  # Get the connection ID from the form
+    print(f"Received connectionId: {connection_id}")  # Debugging log
     container_name = CONTAINER_NAME  # Default to the "uploads" container
 
     if connection_id:
@@ -71,6 +72,7 @@ def upload_file():
         cursor = conn.cursor()
         cursor.execute("SELECT container_name FROM Cases WHERE secret = ?", (connection_id,))
         result = cursor.fetchone()
+        print(f"Database query result for connectionId: {result}")  # Debugging log
         if result:
             container_name = result[0]  # Use the container name for the specified case
         else:
@@ -86,11 +88,13 @@ def upload_file():
             if file:
                 blob_name = f"{file.filename}"
                 blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+                print(f"Uploading to container: {container_name}, blob: {blob_name}")  # Debugging log
                 blob_client.upload_blob(file.read(), overwrite=True)
                 uploaded_files.append(blob_name)
 
         return f"Upload successful! Files stored in container '{container_name}': {', '.join(uploaded_files)}"
     except Exception as e:
+        print(f"Error during file upload: {e}")  # Debugging log
         return f"An error occurred during file upload: {e}", 500
 
 
