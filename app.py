@@ -111,7 +111,7 @@ def manage_files():
             if file_to_delete:
                 blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=file_to_delete)
                 blob_client.delete_blob()
-                return f"File '{file_to_delete}' deleted successfully!", 200
+                return redirect(url_for("manage_files"))  # Redirect to refresh the page
 
         return render_template('manage.html', files=files)
     except Exception as e:

@@ -3,12 +3,18 @@
 {% block title %}Manage Files{% endblock %}
 
 {% block content %}
-<ul class="file-list">
-  <li v-for="file in files" :key="file.name">
-    <svg>...</svg>
-    {{ file.name }} ({{ file.size }} bytes)
-    <button class="btn-danger" @click="deleteFile(file.name)">Delete</button>
-  </li>
-</ul>
-<script src="{{ url_for('static', filename='js/manage.js') }}"></script>
+<div id="app">
+  <h2>Files in Container</h2>
+  <ul class="file-list">
+    {% for file in files %}
+    <li>
+      <strong>{{ file.name }}</strong> ({{ file.size }} bytes)
+      <form method="POST" style="display:inline;">
+        <input type="hidden" name="file_to_delete" value="{{ file.name }}">
+        <button class="btn-danger" type="submit">Delete</button>
+      </form>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
 {% endblock %}
