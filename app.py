@@ -50,7 +50,6 @@ connection_string = (
     f"DRIVER={{ODBC Driver 17 for SQL Server}};"
     f"SERVER={SQL_SERVER};"
     f"DATABASE={SQL_DATABASE};"
-    f"Authentication=ActiveDirectoryMsi;"
 )
 
 conn = pyodbc.connect(connection_string, attrs_before={SQL_COPT_SS_ACCESS_TOKEN: token_struct})
