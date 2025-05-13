@@ -17,10 +17,10 @@
     </div>
     <nav class="menu">
       <ul>
-        <li><a href="{{ url_for('welcome') }}">Home</a></li>
-        <li><a href="{{ url_for('admin_portal') }}">Admin Portal</a></li>
-        <li><a href="{{ url_for('upload') }}">Upload</a></li> <!-- New Upload entry -->
-        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('admin.admin_portal') }}">Admin Portal</a></li>
+        <li><a href="{{ url_for('upload_page') }}">Upload</a></li>
+        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
       </ul>
     </nav>
   </header>

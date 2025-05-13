@@ -27,8 +27,8 @@ app.register_blueprint(auth.bp)
 app.register_blueprint(case.bp)
 
 @app.route('/')
-def welcome():
-    return render_template('welcome.html')
+def index():
+    return render_template('index.html')
 
 @app.route('/upload')
 def upload_page():
