@@ -1,12 +1,14 @@
 from flask import Blueprint, request, render_template
 from services.db_service import get_db_connection
 from services.blob_service import create_container
+from utils.auth import login_required
 import uuid
 import secrets
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 @bp.route('/', methods=['GET', 'POST'])
+@login_required
 def admin_portal():
     conn = get_db_connection()
     cursor = conn.cursor()

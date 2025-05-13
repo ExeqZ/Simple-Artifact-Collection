@@ -20,7 +20,6 @@ init_db(app)
 app.register_blueprint(admin.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(case.bp)
-app.register_blueprint(manage.bp)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

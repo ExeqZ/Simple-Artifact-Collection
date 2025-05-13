@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, session, url_for
+from flask import Blueprint, redirect, session, url_for, request
 from msal import ConfidentialClientApplication
 import os
 
@@ -32,10 +32,10 @@ def callback():
             redirect_uri=url_for("auth.callback", _external=True),
         )
         if "access_token" in result:
-            session["user"] = result.get("id_token_claims")
-    return redirect(url_for("manage.manage_files"))
+            session["user"] = result.get("id_token_claims")  # Store user info in session
+    return redirect(url_for("admin.admin_portal"))
 
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    return redirect(url_for("auth.login"))
