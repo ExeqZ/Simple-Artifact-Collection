@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, session
+from flask import Flask, render_template, redirect, url_for, session, request
 from app_routes import admin, auth, case
 from services.db_service import init_db
 from azure.identity import DefaultAzureCredential
@@ -15,6 +15,9 @@ blob_service_client = BlobServiceClient(
     credential=DefaultAzureCredential()
 )
 
+UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "./uploads")
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 # Initialize database
 init_db(app)
 
@@ -27,15 +30,19 @@ app.register_blueprint(case.bp)
 def welcome():
     return render_template('welcome.html')
 
-@app.route('/admin')
-def admin_portal():
-    if not session.get("user"):
-        return redirect(url_for("auth.login"))
-    return redirect(url_for("admin.admin_portal"))
-
 @app.route('/upload')
 def upload_page():
     return render_template('upload.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return "No file part", 400
+    file = request.files['file']
+    if file.filename == '':
+        return "No selected file", 400
+    file.save(os.path.join(UPLOAD_FOLDER, file.filename))
+    return "File uploaded successfully", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)

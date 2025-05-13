@@ -2,6 +2,7 @@ from flask import Blueprint, request, render_template
 from services.db_service import get_db_connection
 from services.blob_service import create_container
 from utils.auth import login_required
+from app import blob_service_client
 import uuid
 import secrets
 
@@ -22,7 +23,7 @@ def admin_portal():
         secret = secrets.token_hex(16)
 
         try:
-            create_container(container_name)
+            create_container(container_name, blob_service_client)
             cursor.execute(
                 "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
                 (case_name, container_name, secret),
@@ -32,5 +33,14 @@ def admin_portal():
             return f"Error creating case: {e}", 500
 
     cursor.execute("SELECT name FROM Cases")
-    cases = cursor.fetchall()
+    cases = [row[0] for row in cursor.fetchall()]  # Flatten the list
     return render_template('admin.html', cases=cases)
+
+@bp.route('/api/cases', methods=['GET'])
+@login_required
+def get_cases():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM Cases")
+    cases = [row[0] for row in cursor.fetchall()]
+    return {"cases": cases}, 200
