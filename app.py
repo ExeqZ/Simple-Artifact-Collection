@@ -21,7 +21,7 @@ app.register_blueprint(admin.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(case.bp)
 
-@app.route('/')
+@app.route('/', endpoint='index')
 def welcome():
     """Welcome page with app description and navigation menu."""
     return render_template('welcome.html')
