@@ -1,5 +1,5 @@
 from flask import Flask
-from app_routes import admin, auth, case, manage
+from app_routes import admin, auth, case
 from services.db_service import init_db
 from azure.identity import DefaultAzureCredential
 from azure.storage.blob import BlobServiceClient
