@@ -52,8 +52,8 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write # This is required for requesting the JWT
+      contents: read # This is required for actions/checkout
 
     steps:
       - name: Download artifact from build job
@@ -64,7 +64,9 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -78,4 +80,3 @@ jobs:
         with:
           app-name: 'wApp-upload-prod-northeu-01'
           slot-name: 'Production'
-          
