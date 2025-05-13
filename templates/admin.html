@@ -3,20 +3,6 @@
 {% block title %}Admin Portal{% endblock %}
 
 {% block content %}
-<div id="app">
-  <div class="form-container">
-    <form @submit.prevent="createCase">
-      <h2>Create a New Case</h2>
-      <input type="text" v-model="newCaseName" placeholder="Enter case name" required>
-      <button class="btn-primary" type="submit">Create Case</button>
-    </form>
-    <div v-if="message" class="message">{{ message }}</div>
-  </div>
-
-  <h2>Existing Cases</h2>
-  <ul class="case-list">
-    <li v-for="caseItem in cases" :key="caseItem">{{ caseItem }}</li>
-  </ul>
-</div>
+<div id="react-app"></div>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 {% endblock %}

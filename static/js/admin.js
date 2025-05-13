@@ -1,64 +1,72 @@
-const adminApp = Vue.createApp({
-  data() {
-    return {
-      cases: [],
-      newCaseName: '',
-      message: '',
-    };
-  },
-  async mounted() {
-    await this.fetchCases();
-  },
-  methods: {
-    async fetchCases() {
-      try {
-        const response = await fetch('/admin');
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const caseElements = doc.querySelectorAll('ul > li');
-        this.cases = Array.from(caseElements).map(el => el.innerText);
-      } catch (error) {
-        console.error('Error fetching cases:', error);
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+
+function AdminPortal() {
+  const [cases, setCases] = useState([]);
+  const [newCaseName, setNewCaseName] = useState('');
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    // Fetch existing cases from the server
+    fetch('/manage/api/cases')
+      .then(response => response.json())
+      .then(data => setCases(data.cases || []))
+      .catch(error => console.error('Error fetching cases:', error));
+  }, []);
+
+  const createCase = async () => {
+    if (!newCaseName) {
+      setMessage('Case name cannot be empty.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/manage/api/cases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCaseName }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setCases([...cases, result.case]);
+        setMessage('Case created successfully!');
+        setNewCaseName('');
+      } else {
+        const error = await response.json();
+        setMessage(`Error: ${error.message}`);
       }
-    },
-    async createCase() {
-      if (!this.newCaseName) {
-        this.message = 'Please enter a case name.';
-        return;
-      }
+    } catch (error) {
+      console.error('Error creating case:', error);
+      setMessage('An error occurred while creating the case.');
+    }
+  };
 
-      const formData = new FormData();
-      formData.append('case_name', this.newCaseName);
+  return (
+    <div className="admin-container">
+      <h1 className="text-3xl font-bold text-center text-blue-600 mb-4">Admin Portal</h1>
+      <div className="form-container">
+        <h2>Create a New Case</h2>
+        <input
+          type="text"
+          value={newCaseName}
+          onChange={(e) => setNewCaseName(e.target.value)}
+          placeholder="Enter case name"
+          className="w-full border border-gray-300 p-2 rounded-lg mb-4"
+        />
+        <button onClick={createCase} className="btn-primary">
+          Create Case
+        </button>
+        {message && <div className="mt-4 text-center">{message}</div>}
+      </div>
+      <h2 className="mt-8">Existing Cases</h2>
+      <ul className="case-list">
+        {cases.map((caseItem, index) => (
+          <li key={index}>{caseItem}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
-      try {
-        const response = await fetch('/admin', {
-          method: 'POST',
-          body: formData,
-        });
-
-        const result = await response.text(); // Log the response
-        if (response.ok) {
-          this.message = 'Case created successfully!';
-          this.newCaseName = '';
-          await this.fetchCases(); // Refresh the case list
-        } else {
-          console.error('Error creating case:', result);
-          this.message = `Error creating case: ${result}`;
-        }
-      } catch (error) {
-        console.error('Error creating case:', error);
-        this.message = 'Error creating case.';
-      }
-    },
-    generateConnectionId() {
-      // Generate a random connection ID in the format XXXX-XXXX-XXXX-XXXX
-      return Array(4)
-        .fill(0)
-        .map(() => Math.random().toString(36).substring(2, 6).toUpperCase())
-        .join('-');
-    },
-  },
-});
-
-adminApp.mount('#app');
+ReactDOM.render(<AdminPortal />, document.getElementById('react-app'));

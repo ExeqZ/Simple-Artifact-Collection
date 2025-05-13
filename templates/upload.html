@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Files{% endblock %}
+
+{% block content %}
+<div id="app">
+  <div class="upload-container">
+    <h1 class="text-3xl font-bold text-center text-blue-600 mb-4">Upload Files</h1>
+    <form @submit.prevent="uploadFiles">
+      <div class="mb-4">
+        <label for="file" class="block text-lg font-semibold mb-2">Choose files to upload:</label>
+        <input type="file" id="file" multiple @change="handleFileChange" class="w-full border border-gray-300 p-2 rounded-lg">
+      </div>
+      <div class="mb-4">
+        <label for="connectionId" class="block text-lg font-semibold mb-2">Connection ID:</label>
+        <input type="text" id="connectionId" v-model="connectionId" placeholder="Enter Connection ID" class="w-full border border-gray-300 p-2 rounded-lg">
+      </div>
+      <div class="text-center">
+        <button type="submit" class="btn-primary">
+          Upload
+        </button>
+      </div>
+      <div v-if="message" :class="{'text-green-600': success, 'text-red-600': !success}" class="mt-4 text-center">
+        {{ message }}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
