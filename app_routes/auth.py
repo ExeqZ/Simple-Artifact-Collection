@@ -26,13 +26,16 @@ def login():
 def callback():
     code = request.args.get("code")
     if code:
-        result = msal_app.acquire_token_by_authorization_code(
-            code,
-            scopes=SCOPE,
-            redirect_uri=url_for("auth.callback", _external=True),
-        )
-        if "access_token" in result:
-            session["user"] = result.get("id_token_claims")  # Store user info in session
+        try:
+            result = msal_app.acquire_token_by_authorization_code(
+                code,
+                scopes=SCOPE,
+                redirect_uri=url_for("auth.callback", _external=True),
+            )
+            if "access_token" in result:
+                session["user"] = result.get("id_token_claims")
+        except Exception as e:
+            return f"An error occurred: {str(e)}", 500
     return redirect(url_for("admin.admin_portal"))
 
 @bp.route('/logout')
