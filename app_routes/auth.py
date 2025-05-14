@@ -19,7 +19,7 @@ msal_app = ConfidentialClientApplication(
 
 def get_redirect_uri():
     """Generate the redirect URI dynamically based on the request."""
-    return f"{request.scheme}://{request.host}{REDIRECT_PATH}"
+    return f"https://{request.host}{REDIRECT_PATH}"  # Force HTTPS for production
 
 @bp.route('/login')
 def login():
