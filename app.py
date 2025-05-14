@@ -1,19 +1,10 @@
 from flask import Flask, render_template, redirect, url_for, session, request
 from app_routes import admin, auth, case
 from services.db_service import init_db
-from azure.identity import DefaultAzureCredential
-from azure.storage.blob import BlobServiceClient
 import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "default-secret-key")
-
-# Initialize Azure Blob Storage
-STORAGE_ACCOUNT_URL = os.environ.get("STORAGE_ACCOUNT_URL")
-blob_service_client = BlobServiceClient(
-    account_url=STORAGE_ACCOUNT_URL,
-    credential=DefaultAzureCredential()
-)
 
 UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "./uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

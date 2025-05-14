@@ -1,8 +1,7 @@
 from flask import Blueprint, request, render_template
 from services.db_service import get_db_connection
-from services.blob_service import create_container
+from services.blob_service import create_container, blob_service_client
 from utils.auth import login_required
-from app import blob_service_client
 import uuid
 import secrets
 
