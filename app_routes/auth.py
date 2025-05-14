@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, session, url_for, request
+from flask import Blueprint, redirect, session, url_for, request, current_app
 from msal import ConfidentialClientApplication
 import os
 
@@ -17,9 +17,14 @@ msal_app = ConfidentialClientApplication(
     client_credential=CLIENT_SECRET,
 )
 
+def get_redirect_uri():
+    """Generate the redirect URI dynamically based on the request."""
+    return f"{request.scheme}://{request.host}{REDIRECT_PATH}"
+
 @bp.route('/login')
 def login():
-    auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=url_for("auth.callback", _external=True))
+    redirect_uri = get_redirect_uri()
+    auth_url = msal_app.get_authorization_request_url(SCOPE, redirect_uri=redirect_uri)
     return redirect(auth_url)
 
 @bp.route('/callback')
@@ -27,10 +32,11 @@ def callback():
     code = request.args.get("code")
     if code:
         try:
+            redirect_uri = get_redirect_uri()
             result = msal_app.acquire_token_by_authorization_code(
                 code,
                 scopes=SCOPE,
-                redirect_uri=url_for("auth.callback", _external=True),
+                redirect_uri=redirect_uri,
             )
             if "access_token" in result:
                 session["user"] = result.get("id_token_claims")
