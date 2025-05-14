@@ -20,6 +20,7 @@
         <a href="{{ url_for('index') }}" class="hover:underline">Home</a>
         <a href="{{ url_for('admin.admin_portal') }}" class="hover:underline">Admin Portal</a>
         <a href="{{ url_for('upload_page') }}" class="hover:underline">Upload</a>
+        <a href="{{ url_for('about') }}" class="hover:underline">About</a>
         <a href="{{ url_for('auth.logout') }}" class="hover:underline">Logout</a>
       </nav>
       <button class="md:hidden text-white" onclick="toggleMenu()">
@@ -30,6 +31,7 @@
       <a href="{{ url_for('index') }}" class="block px-4 py-2 hover:bg-blue-800">Home</a>
       <a href="{{ url_for('admin.admin_portal') }}" class="block px-4 py-2 hover:bg-blue-800">Admin Portal</a>
       <a href="{{ url_for('upload_page') }}" class="block px-4 py-2 hover:bg-blue-800">Upload</a>
+      <a href="{{ url_for('about') }}" class="block px-4 py-2 hover:bg-blue-800">About</a>
       <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-blue-800">Logout</a>
     </nav>
   </header>

@@ -35,5 +35,9 @@ def upload_file():
     file.save(os.path.join(UPLOAD_FOLDER, file.filename))
     return "File uploaded successfully", 200
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
