@@ -42,19 +42,20 @@ def upload_file():
 
     container_name = result[0]
 
-    if 'file' not in request.files:
-        return "No file part", 400
-    file = request.files['file']
-    if file.filename == '':
-        return "No selected file", 400
+    if 'files' not in request.files:
+        return "No files part", 400
+    files = request.files.getlist('files')
+    if not files or all(file.filename == '' for file in files):
+        return "No selected files", 400
 
     try:
         container_client = blob_service_client.get_container_client(container_name)
-        blob_client = container_client.get_blob_client(file.filename)
-        blob_client.upload_blob(file)
-        return "File uploaded successfully", 200
+        for file in files:
+            blob_client = container_client.get_blob_client(file.filename)
+            blob_client.upload_blob(file)
+        return "Files uploaded successfully", 200
     except Exception as e:
-        return f"Error uploading file: {e}", 500
+        return f"Error uploading files: {e}", 500
 
 @app.route('/about')
 def about():

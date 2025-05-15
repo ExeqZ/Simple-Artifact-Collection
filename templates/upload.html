@@ -17,7 +17,15 @@
         required
         class="block w-full border border-gray-300 p-2 rounded mb-4"
     >
-    <input type="file" name="file" class="block w-full border border-gray-300 p-2 rounded">
+    <label for="files" class="block text-lg font-medium mb-2">Select Files:</label>
+    <input
+        type="file"
+        id="files"
+        name="files"
+        multiple
+        required
+        class="block w-full border border-gray-300 p-2 rounded"
+    >
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload</button>
   </form>
 </div>
