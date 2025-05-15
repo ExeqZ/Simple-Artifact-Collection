@@ -18,8 +18,21 @@ def admin_portal():
         if not case_name:
             return "Case name is required.", 400
 
-        container_name = f"case-{uuid.uuid4().hex[:8]}"
-        secret = generate_secret()  # Use the corrected generate_secret function
+        # Ensure unique case name and container name
+        original_case_name = case_name
+        original_container_name = f"case-{uuid.uuid4().hex[:8]}"
+        container_name = original_container_name
+        counter = 1
+
+        while True:
+            cursor.execute("SELECT 1 FROM Cases WHERE name = ? OR container_name = ?", (case_name, container_name))
+            if not cursor.fetchone():
+                break
+            case_name = f"{original_case_name}_{counter}"
+            container_name = f"{original_container_name}_{counter}"
+            counter += 1
+
+        secret = generate_secret()
 
         try:
             create_container(container_name)
