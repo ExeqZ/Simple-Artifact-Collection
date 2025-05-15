@@ -22,7 +22,7 @@ def admin_portal():
         secret = secrets.token_hex(16)
 
         try:
-            create_container(container_name, blob_service_client)
+            create_container(container_name)  # Removed the second argument
             cursor.execute(
                 "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
                 (case_name, container_name, secret),
