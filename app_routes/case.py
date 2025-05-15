@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, request, jsonify
 from services.db_service import get_db_connection
 from services.blob_service import blob_service_client
+from utils.auth import login_required
 
 bp = Blueprint('case', __name__, url_prefix='/case')
 
 @bp.route('/<case_id>', methods=['GET'])
+@login_required
 def view_case(case_id):
     """
     View details of a specific case, including files in its blob container.
@@ -31,6 +33,7 @@ def view_case(case_id):
     return render_template('case.html', case={"name": case_name, "container_name": container_name}, blobs=blob_list)
 
 @bp.route('/<case_id>/files', methods=['GET'])
+@login_required
 def list_case_files(case_id):
     """
     API endpoint to list files in a specific case's blob container.
