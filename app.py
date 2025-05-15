@@ -3,7 +3,7 @@ from app_routes import admin, auth, case
 from services.db_service import init_db, get_db_connection
 import os
 import re
-from services.blob_service import blob_service_client
+from services.blob_service import blob_service_client, create_container
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "default-secret-key")
@@ -13,6 +13,18 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Initialize database
 init_db(app)
+
+# Ensure the default case exists
+conn = get_db_connection()
+cursor = conn.cursor()
+cursor.execute("SELECT container_name FROM Cases WHERE container_name = 'default-case'")
+if not cursor.fetchone():
+    create_container("default-case")
+    cursor.execute(
+        "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
+        ("Default Case", "default-case", "0000-0000-0000-0000"),
+    )
+    conn.commit()
 
 # Register Blueprints
 app.register_blueprint(admin.bp)

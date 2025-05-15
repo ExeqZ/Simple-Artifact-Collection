@@ -33,6 +33,9 @@
             <td class="border border-gray-300 px-4 py-2">{{ case.total_size }} bytes</td>
             <td class="border border-gray-300 px-4 py-2">
                 <a href="{{ url_for('case.view_case', case_id=case.container_name) }}" class="btn-secondary">Manage</a>
+                {% if case.container_name != "default-case" %}
+                <button onclick="deleteCase('{{ case.container_name }}')" class="btn-secondary">Delete</button>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}
@@ -41,4 +44,24 @@
 
 <div id="react-app"></div>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+
+<script>
+  async function deleteCase(containerName) {
+    if (confirm(`Are you sure you want to delete the case: ${containerName}?`)) {
+      try {
+        const response = await fetch(`/admin/delete_case/${containerName}`, { method: 'POST' });
+        if (response.ok) {
+          alert("Case deleted successfully.");
+          location.reload();
+        } else {
+          const error = await response.text();
+          alert(`Error: ${error}`);
+        }
+      } catch (error) {
+        console.error('Error deleting case:', error);
+        alert('An error occurred while deleting the case.');
+      }
+    }
+  }
+</script>
 {% endblock %}

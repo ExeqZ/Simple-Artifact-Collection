@@ -62,3 +62,29 @@ def get_cases():
     cursor.execute("SELECT name FROM Cases")
     cases = [row[0] for row in cursor.fetchall()]
     return {"cases": cases}, 200
+
+@bp.route('/delete_case/<container_name>', methods=['POST'])
+@login_required
+def delete_case(container_name):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Ensure the default case cannot be deleted
+    if container_name == "uploads":
+        return "The default case cannot be deleted.", 400
+
+    try:
+        # Delete the blob container and its files
+        container_client = blob_service_client.get_container_client(container_name)
+        if container_client.exists():
+            blobs = container_client.list_blobs()
+            for blob in blobs:
+                container_client.delete_blob(blob.name)
+            container_client.delete_container()
+
+        # Delete the case entry from the database
+        cursor.execute("DELETE FROM Cases WHERE container_name = ?", (container_name,))
+        conn.commit()
+        return "Case deleted successfully.", 200
+    except Exception as e:
+        return f"Error deleting case: {e}", 500
