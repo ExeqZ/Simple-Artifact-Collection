@@ -6,9 +6,56 @@
 <h2>Files in Container: {{ case.container_name }}</h2>
 <ul class="file-list">
   {% for blob in blobs %}
-  <li>
-    <strong>{{ blob.name }}</strong> ({{ blob.size }} bytes)
+  <li class="flex justify-between items-center">
+    <span><strong>{{ blob.name }}</strong> ({{ blob.size }} bytes)</span>
+    <div class="flex space-x-2">
+      <button onclick="downloadFile('{{ case.container_name }}', '{{ blob.name }}')" class="btn-primary">Download</button>
+      <button onclick="deleteFile('{{ case.container_name }}', '{{ blob.name }}')" class="btn-secondary">Delete</button>
+    </div>
   </li>
   {% endfor %}
 </ul>
+
+<script>
+  async function deleteFile(containerName, filename) {
+    if (confirm(`Are you sure you want to delete ${filename}?`)) {
+      try {
+        const response = await fetch(`/case/${containerName}/files/${filename}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok) {
+          alert(result.message);
+          location.reload();
+        } else {
+          alert(result.error);
+        }
+      } catch (error) {
+        console.error('Error deleting file:', error);
+        alert('An error occurred while deleting the file.');
+      }
+    }
+  }
+
+  async function downloadFile(containerName, filename) {
+    try {
+      const response = await fetch(`/case/${containerName}/files/${filename}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        const result = await response.json();
+        alert(result.error);
+      }
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('An error occurred while downloading the file.');
+    }
+  }
+</script>
 {% endblock %}

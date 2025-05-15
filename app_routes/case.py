@@ -57,3 +57,62 @@ def list_case_files(case_id):
         return jsonify(blob_list), 200
     except Exception as e:
         return jsonify({"error": f"Error fetching blobs: {e}"}), 500
+
+@bp.route('/<case_id>/files/<filename>', methods=['DELETE'])
+@login_required
+def delete_file(case_id, filename):
+    """
+    API endpoint to delete a specific file from a case's blob container.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Fetch the container name for the case
+    cursor.execute("SELECT container_name FROM Cases WHERE container_name = ?", (case_id,))
+    result = cursor.fetchone()
+    if not result:
+        return jsonify({"error": "Case not found."}), 404
+
+    container_name = result[0]
+
+    try:
+        container_client = blob_service_client.get_container_client(container_name)
+        blob_client = container_client.get_blob_client(filename)
+        if blob_client.exists():
+            blob_client.delete_blob()
+            return jsonify({"message": "File deleted successfully."}), 200
+        else:
+            return jsonify({"error": "File not found."}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error deleting file: {e}"}), 500
+
+@bp.route('/<case_id>/files/<filename>', methods=['GET'])
+@login_required
+def download_file(case_id, filename):
+    """
+    API endpoint to download a specific file from a case's blob container.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Fetch the container name for the case
+    cursor.execute("SELECT container_name FROM Cases WHERE container_name = ?", (case_id,))
+    result = cursor.fetchone()
+    if not result:
+        return jsonify({"error": "Case not found."}), 404
+
+    container_name = result[0]
+
+    try:
+        container_client = blob_service_client.get_container_client(container_name)
+        blob_client = container_client.get_blob_client(filename)
+        if blob_client.exists():
+            file_stream = blob_client.download_blob().readall()
+            return file_stream, 200, {
+                "Content-Disposition": f"attachment; filename={filename}",
+                "Content-Type": "application/octet-stream",
+            }
+        else:
+            return jsonify({"error": "File not found."}), 404
+    except Exception as e:
+        return jsonify({"error": f"Error downloading file: {e}"}), 500
