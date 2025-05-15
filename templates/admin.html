@@ -3,6 +3,23 @@
 {% block title %}Admin Portal{% endblock %}
 
 {% block content %}
+<h1>Admin Portal</h1>
+
+<!-- Form to add a new case -->
+<form method="POST" action="/admin/">
+    <label for="case_name">Case Name:</label>
+    <input type="text" id="case_name" name="case_name" required>
+    <button type="submit">Add Case</button>
+</form>
+
+<!-- Display the list of cases -->
+<h2>Available Cases</h2>
+<ul>
+    {% for case in cases %}
+        <li>{{ case }}</li>
+    {% endfor %}
+</ul>
+
 <div id="react-app"></div>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
 {% endblock %}
