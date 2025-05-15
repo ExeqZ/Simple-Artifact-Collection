@@ -2,6 +2,7 @@ from azure.storage.blob import BlobServiceClient
 from azure.identity import DefaultAzureCredential
 import os
 import re
+import secrets
 
 STORAGE_ACCOUNT_URL = os.environ.get("STORAGE_ACCOUNT_URL")
 blob_service_client = BlobServiceClient(

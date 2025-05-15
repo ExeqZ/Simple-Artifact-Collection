@@ -1,6 +1,6 @@
 from flask import Blueprint, request, render_template
 from services.db_service import get_db_connection
-from services.blob_service import create_container, blob_service_client
+from services.blob_service import create_container, blob_service_client, generate_secret
 from utils.auth import login_required
 import uuid
 import secrets
@@ -19,10 +19,10 @@ def admin_portal():
             return "Case name is required.", 400
 
         container_name = f"case-{uuid.uuid4().hex[:8]}"
-        secret = secrets.token_hex(16)
+        secret = generate_secret()  # Use the corrected generate_secret function
 
         try:
-            create_container(container_name)  # Removed the second argument
+            create_container(container_name)
             cursor.execute(
                 "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
                 (case_name, container_name, secret),
