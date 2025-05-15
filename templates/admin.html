@@ -3,22 +3,41 @@
 {% block title %}Admin Portal{% endblock %}
 
 {% block content %}
-<h1>Admin Portal</h1>
+<h1 class="text-3xl font-bold text-center text-blue-600 mb-4">Admin Portal</h1>
 
 <!-- Form to add a new case -->
-<form method="POST" action="/admin/">
-    <label for="case_name">Case Name:</label>
-    <input type="text" id="case_name" name="case_name" required>
-    <button type="submit">Add Case</button>
+<form method="POST" action="/admin/" class="mb-6">
+    <label for="case_name" class="block text-lg font-medium mb-2">Case Name:</label>
+    <input type="text" id="case_name" name="case_name" required class="w-full border border-gray-300 p-2 rounded-lg mb-4">
+    <button type="submit" class="btn-primary">Add Case</button>
 </form>
 
 <!-- Display the list of cases -->
-<h2>Available Cases</h2>
-<ul>
-    {% for case in cases %}
-        <li>{{ case }}</li>
-    {% endfor %}
-</ul>
+<h2 class="text-2xl font-semibold mb-4">Available Cases</h2>
+<table class="table-auto w-full border-collapse border border-gray-300">
+    <thead>
+        <tr class="bg-gray-200">
+            <th class="border border-gray-300 px-4 py-2">Case Name</th>
+            <th class="border border-gray-300 px-4 py-2">Case Secret</th>
+            <th class="border border-gray-300 px-4 py-2">File Count</th>
+            <th class="border border-gray-300 px-4 py-2">Total File Size</th>
+            <th class="border border-gray-300 px-4 py-2">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for case in cases %}
+        <tr>
+            <td class="border border-gray-300 px-4 py-2">{{ case.name }}</td>
+            <td class="border border-gray-300 px-4 py-2">{{ case.secret }}</td>
+            <td class="border border-gray-300 px-4 py-2">{{ case.file_count }}</td>
+            <td class="border border-gray-300 px-4 py-2">{{ case.total_size }} bytes</td>
+            <td class="border border-gray-300 px-4 py-2">
+                <a href="{{ url_for('case.view_case', case_id=case.container_name) }}" class="btn-secondary">Manage</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
 <div id="react-app"></div>
 <script src="{{ url_for('static', filename='js/admin.js') }}"></script>

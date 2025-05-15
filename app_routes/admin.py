@@ -31,9 +31,27 @@ def admin_portal():
         except Exception as e:
             return f"Error creating case: {e}", 500
 
-    # Fetch all current cases to display
-    cursor.execute("SELECT name FROM Cases")
-    cases = [row[0] for row in cursor.fetchall()]  # Flatten the list
+    # Fetch all current cases with additional details
+    cursor.execute("SELECT name, secret, container_name FROM Cases")
+    cases = []
+    for row in cursor.fetchall():
+        case_name, secret, container_name = row
+        try:
+            container_client = blob_service_client.get_container_client(container_name)
+            blobs = list(container_client.list_blobs())
+            file_count = len(blobs)
+            total_size = sum(blob.size for blob in blobs)
+        except Exception:
+            file_count = 0
+            total_size = 0
+        cases.append({
+            "name": case_name,
+            "secret": secret,
+            "file_count": file_count,
+            "total_size": total_size,
+            "container_name": container_name,
+        })
+
     return render_template('admin.html', cases=cases)
 
 @bp.route('/api/cases', methods=['GET'])

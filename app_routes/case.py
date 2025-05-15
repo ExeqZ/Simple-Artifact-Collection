@@ -13,7 +13,7 @@ def view_case(case_id):
     cursor = conn.cursor()
 
     # Fetch case details from the database
-    cursor.execute("SELECT name, container_name FROM Cases WHERE id = ?", (case_id,))
+    cursor.execute("SELECT name, container_name FROM Cases WHERE container_name = ?", (case_id,))
     case = cursor.fetchone()
     if not case:
         return "Case not found.", 404
