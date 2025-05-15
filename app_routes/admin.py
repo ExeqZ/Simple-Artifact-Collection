@@ -31,6 +31,7 @@ def admin_portal():
         except Exception as e:
             return f"Error creating case: {e}", 500
 
+    # Fetch all current cases to display
     cursor.execute("SELECT name FROM Cases")
     cases = [row[0] for row in cursor.fetchall()]  # Flatten the list
     return render_template('admin.html', cases=cases)

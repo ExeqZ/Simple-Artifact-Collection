@@ -7,21 +7,24 @@ function AdminPortal() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    // Fetch existing cases from the server
-    fetch('/manage/api/cases')
+    // Fetch existing cases from the correct server endpoint
+    fetch('/admin/api/cases')
       .then(response => response.json())
       .then(data => setCases(data.cases || []))
-      .catch(error => console.error('Error fetching cases:', error));
+      .catch(error => {
+        console.error('Error fetching cases:', error);
+        setMessage('Failed to load cases. Please try again later.');
+      });
   }, []);
 
   const createCase = async () => {
-    if (!newCaseName) {
+    if (!newCaseName.trim()) {
       setMessage('Case name cannot be empty.');
       return;
     }
 
     try {
-      const response = await fetch('/manage/api/cases', {
+      const response = await fetch('/admin/api/cases', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newCaseName }),
@@ -34,7 +37,7 @@ function AdminPortal() {
         setNewCaseName('');
       } else {
         const error = await response.json();
-        setMessage(`Error: ${error.message}`);
+        setMessage(`Error: ${error.message || 'Failed to create case.'}`);
       }
     } catch (error) {
       console.error('Error creating case:', error);
