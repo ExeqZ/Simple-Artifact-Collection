@@ -6,11 +6,34 @@
 <div class="text-center">
   <h1 class="text-4xl font-bold text-blue-600 mb-4">About File Management System</h1>
   <p class="text-lg mb-6">
-    The File Management System is designed to securely upload, manage, and organize files. 
-    It provides advanced features for administrators to manage cases and containers.
+    The File Management System is a secure and scalable platform for uploading, managing, and organizing files. 
+    It leverages Azure services for storage and authentication, ensuring a modern and reliable experience.
   </p>
+  <h2 class="text-2xl font-semibold mb-4">Features</h2>
+  <ul class="list-disc list-inside text-left max-w-2xl mx-auto mb-6">
+    <li><strong>File Upload Portal:</strong> Users can upload files to specific cases using a secret key.</li>
+    <li><strong>Admin Portal:</strong> Admins can create cases, view case details, and manage files in blob containers.</li>
+    <li><strong>Azure Integration:</strong> 
+      <ul class="list-disc list-inside ml-6">
+        <li>Azure Blob Storage for secure file storage.</li>
+        <li>Azure SQL Database for case metadata storage.</li>
+        <li>Managed Identity for secure authentication to Azure services.</li>
+      </ul>
+    </li>
+    <li><strong>Dynamic UI:</strong> A responsive and interactive user interface built with modern web technologies.</li>
+  </ul>
+  <h2 class="text-2xl font-semibold mb-4">Technologies Used</h2>
+  <ul class="list-disc list-inside text-left max-w-2xl mx-auto mb-6">
+    <li>Flask (Python) for the backend.</li>
+    <li>Azure Blob Storage and Azure SQL Database for storage and metadata management.</li>
+    <li>Microsoft Entra ID (Azure AD) for authentication.</li>
+    <li>Tailwind CSS and Font Awesome for a modern and responsive UI.</li>
+  </ul>
+  <h2 class="text-2xl font-semibold mb-4">How It Works</h2>
   <p class="text-lg mb-6">
-    This application is inspired by the design principles of Basevision, ensuring a modern and user-friendly interface.
+    Users upload files to specific cases using a secret key. Admins can create and manage cases, 
+    which are mapped to Azure Blob Storage containers. The system ensures secure file storage and 
+    metadata management using Azure services.
   </p>
 </div>
 {% endblock %}

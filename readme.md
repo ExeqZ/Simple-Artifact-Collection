@@ -1,30 +1,26 @@
 # File Upload and Management System
 
-This project is a **File Upload and Management System** built with Flask, Vue.js, and Azure services. It allows users to upload files to Azure Blob Storage, manage cases with dedicated blob containers, and provides an admin portal for case management. The system uses **Azure SQL Database** for storing case metadata and **Managed Identity** for secure authentication.
+This project is a **File Upload and Management System** built with Flask and Azure services. It allows users to upload files to Azure Blob Storage, manage cases with dedicated blob containers, and provides an admin portal for case management. The system uses **Azure SQL Database** for storing case metadata and **Managed Identity** for secure authentication.
 
 ---
 
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Features](#features)
-3. [List of Required Resources](#list-of-required-resources)
-4. [Manual Steps to Prepare the Environment](#manual-steps-to-prepare-the-environment)
-5. [Project Structure](#project-structure)
-6. [How to Run the Project](#how-to-run-the-project)
-7. [Screenshots](#screenshots)
-8. [Contributing](#contributing)
-9. [License](#license)
+3. [Technologies Used](#technologies-used)
+4. [List of Required Resources](#list-of-required-resources)
+5. [Manual Steps to Prepare the Environment](#manual-steps-to-prepare-the-environment)
+6. [Project Structure](#project-structure)
+7. [How to Run the Project](#how-to-run-the-project)
+8. [Screenshots](#screenshots)
+9. [Contributing](#contributing)
+10. [License](#license)
 
 ---
 
 ## Introduction
 
-This project is designed to provide a secure and scalable file upload and management system using Azure services. It includes:
-- A **user portal** for uploading files to specific cases.
-- An **admin portal** for managing cases and viewing files in blob containers.
-- Integration with **Azure SQL Database** for case metadata storage.
-- Authentication using **Microsoft Entra ID (Azure AD)**.
-- Secure file uploads using **Azure Blob Storage**.
+The File Upload and Management System is designed to provide a secure and scalable platform for uploading, managing, and organizing files. It leverages Azure services for storage and authentication, ensuring a modern and reliable experience.
 
 ---
 
@@ -36,7 +32,18 @@ This project is designed to provide a secure and scalable file upload and manage
   - **Azure Blob Storage**: Stores uploaded files in dedicated containers.
   - **Azure SQL Database**: Stores case metadata (case name, container name, secret).
   - **Managed Identity**: Securely connects to Azure SQL Database without storing credentials.
-- **Dynamic UI**: Built with Vue.js for a responsive and interactive user experience.
+- **Dynamic UI**: A responsive and interactive user interface built with modern web technologies.
+
+---
+
+## Technologies Used
+
+- **Flask (Python)**: Backend framework for handling routes and logic.
+- **Azure Blob Storage**: Secure storage for uploaded files.
+- **Azure SQL Database**: Metadata storage for cases.
+- **Microsoft Entra ID (Azure AD)**: Authentication and authorization.
+- **Tailwind CSS**: Modern and responsive UI styling.
+- **Font Awesome**: Free icons for a polished user interface.
 
 ---
 
@@ -69,7 +76,7 @@ To deploy and run this project, you will need the following Azure resources:
 
 #### c. **Microsoft Entra ID (Azure AD)**
 - Register an **Azure AD Application**.
-- Configure the **Redirect URI** (e.g., `https://<web-app-name>.azurewebsites.net/getAToken`).
+- Configure the **Redirect URI** (e.g., `https://<web-app-name>.azurewebsites.net/auth/callback`).
 - Note the **Client ID**, **Client Secret**, and **Tenant ID**.
 
 #### d. **Azure Web App**
@@ -126,17 +133,17 @@ project0010/
 ├── requirements.txt           # Python dependencies
 ├── templates/                 # HTML templates
 │   ├── index.html             # File upload portal
-│   ├── manage.html            # File management portal
 │   ├── admin.html             # Admin portal
-│   └── case.html              # Case details page
+│   ├── case.html              # Case details page
+│   ├── about.html             # About page
+│   └── upload.html            # File upload page
 ├── static/                    # Static files
 │   ├── css/
 │   │   └── styles.css         # CSS styles
 │   ├── js/
-│   │   ├── index.js           # JavaScript for file upload portal
-│   │   ├── manage.js          # JavaScript for file management portal
-│   │   ├── admin.js           # JavaScript for admin portal
-│   │   └── case.js            # JavaScript for case details page
+│   │   └── base.js            # JavaScript for menu toggle
+│   └── images/
+│       └── logo.png           # Application logo
 └── .env                       # Environment variables (not included in repo)
 ```
 
