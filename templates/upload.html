@@ -36,7 +36,7 @@
     </div>
     <ul id="file-list" class="mt-4 list-disc list-inside text-gray-700"></ul>
     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center space-x-2">
-      <img src="https://www.svgrepo.com/show/532732/file-arrow-up.svg" alt="Upload" class="h-5 w-5">
+      <img src="{{ url_for('static', filename='images/file-arrow-up.svg') }}" alt="Upload" class="h-5 w-5">
       <span>Upload</span>
     </button>
   </form>

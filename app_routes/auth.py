@@ -47,4 +47,4 @@ def callback():
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for("auth.login"))  # Redirect to auth.login after logout
+    return redirect(url_for("index"))  # Redirect to the home page after logout

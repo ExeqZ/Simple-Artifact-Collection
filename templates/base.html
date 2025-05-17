@@ -21,7 +21,11 @@
         <a href="{{ url_for('admin.admin_portal') }}" class="hover:underline">Admin Portal</a>
         <a href="{{ url_for('upload_page') }}" class="hover:underline">Upload</a>
         <a href="{{ url_for('about') }}" class="hover:underline">About</a>
-        <a href="{{ url_for('auth.logout') }}" class="hover:underline">Logout</a>
+        {% if session.get('user') %}
+          <a href="{{ url_for('auth.logout') }}" class="hover:underline">Logout</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="hover:underline">Login</a>
+        {% endif %}
       </nav>
       <button class="md:hidden text-white" onclick="toggleMenu()">
         <i class="fas fa-bars"></i>
@@ -32,7 +36,11 @@
       <a href="{{ url_for('admin.admin_portal') }}" class="block px-4 py-2 hover:bg-blue-800">Admin Portal</a>
       <a href="{{ url_for('upload_page') }}" class="block px-4 py-2 hover:bg-blue-800">Upload</a>
       <a href="{{ url_for('about') }}" class="block px-4 py-2 hover:bg-blue-800">About</a>
-      <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-blue-800">Logout</a>
+      {% if session.get('user') %}
+        <a href="{{ url_for('auth.logout') }}" class="block px-4 py-2 hover:bg-blue-800">Logout</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="block px-4 py-2 hover:bg-blue-800">Login</a>
+      {% endif %}
     </nav>
   </header>
   <main class="container mx-auto p-4">
