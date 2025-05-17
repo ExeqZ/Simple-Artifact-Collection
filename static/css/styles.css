@@ -111,6 +111,11 @@ button {
     cursor: pointer;
 }
 
+button img {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .btn-primary {
     background-color: var(--primary-color);
     color: white;
@@ -164,6 +169,14 @@ button {
     background-color: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+#drop-area {
+    transition: background-color 0.2s ease-in-out;
+}
+
+#drop-area.bg-gray-100 {
+    background-color: #f7fafc; /* Light gray background when dragging */
 }
 
 @keyframes spin {

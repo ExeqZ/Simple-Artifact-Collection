@@ -9,8 +9,14 @@
   <li class="flex justify-between items-center">
     <span><strong>{{ blob.name }}</strong> ({{ blob.size }} bytes)</span>
     <div class="flex space-x-2">
-      <button onclick="downloadFile('{{ case.container_name }}', '{{ blob.name }}')" class="btn-primary">Download</button>
-      <button onclick="deleteFile('{{ case.container_name }}', '{{ blob.name }}')" class="btn-secondary">Delete</button>
+      <button onclick="downloadFile('{{ case.container_name }}', '{{ blob.name }}')" class="btn-primary flex items-center space-x-2">
+        <img src="https://www.svgrepo.com/show/532734/file-arrow-down.svg" alt="Download" class="h-5 w-5">
+        <span>Download</span>
+      </button>
+      <button onclick="deleteFile('{{ case.container_name }}', '{{ blob.name }}')" class="btn-secondary flex items-center space-x-2">
+        <img src="https://www.svgrepo.com/show/532759/file-block-alt-1.svg" alt="Delete" class="h-5 w-5">
+        <span>Delete</span>
+      </button>
     </div>
   </li>
   {% endfor %}
