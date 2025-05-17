@@ -17,12 +17,12 @@ init_db(app)
 # Ensure the default case exists
 conn = get_db_connection()
 cursor = conn.cursor()
-cursor.execute("SELECT container_name FROM Cases WHERE container_name = 'default-case'")
+cursor.execute("SELECT container_name FROM Cases WHERE container_name = 'uploads'")
 if not cursor.fetchone():
-    create_container("default-case")
+    create_container("uploads")
     cursor.execute(
         "INSERT INTO Cases (name, container_name, secret) VALUES (?, ?, ?)",
-        ("Default Case", "default-case", "0000-0000-0000-0000"),
+        ("default", "uploads", "0000-0000-0000-0000"),
     )
     conn.commit()
 
