@@ -4,8 +4,36 @@ from services.blob_service import create_container, blob_service_client, generat
 from utils.auth import login_required
 import uuid
 import secrets
+import json
+from datetime import datetime
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+def update_blobinventory(container_client):
+    blobs = list(container_client.list_blobs())
+    inventory = []
+    for blob in blobs:
+        if blob.name == '.blobinventory':
+            continue
+        blob_client = container_client.get_blob_client(blob.name)
+        blob_bytes = blob_client.download_blob().readall()
+        file_hash = None
+        try:
+            import hashlib
+            file_hash = hashlib.sha256(blob_bytes).hexdigest()
+        except Exception:
+            file_hash = ""
+        entry = {
+            "name": blob.name,
+            "type": blob.content_settings.content_type if hasattr(blob, "content_settings") else "",
+            "size": blob.size,
+            "upload_date": blob.last_modified.isoformat() if hasattr(blob, "last_modified") else "",
+            "hash": file_hash
+        }
+        inventory.append(entry)
+    inventory_client = container_client.get_blob_client('.blobinventory')
+    inventory_bytes = json.dumps(inventory, indent=2).encode('utf-8')
+    inventory_client.upload_blob(inventory_bytes, overwrite=True)
 
 @bp.route('/', methods=['GET', 'POST'])
 @login_required
@@ -101,3 +129,21 @@ def delete_case(container_name):
         return "Case deleted successfully.", 200
     except Exception as e:
         return f"Error deleting case: {e}", 500
+
+@bp.route('/update_blobinventory', methods=['POST'])
+@login_required
+def update_all_blobinventories():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT container_name FROM Cases")
+    containers = [row[0] for row in cursor.fetchall()]
+    updated = []
+    for container_name in containers:
+        try:
+            container_client = blob_service_client.get_container_client(container_name)
+            if container_client.exists():
+                update_blobinventory(container_client)
+                updated.append(container_name)
+        except Exception:
+            pass
+    return f"Updated blob inventory for: {', '.join(updated)}", 200
