@@ -16,7 +16,7 @@ This directory contains all necessary Bicep templates and scripts to deploy the 
 
 ## Resources Deployed
 
-- **Resource Group**
+- **Resource Group** (subscription scope)
 - **Azure Storage Account** (StorageV2, general purpose v2)
 - **Azure SQL Server & Database** (Basic, 5 DTU, zone redundant)
 - **App Service Plan** (Basic B1, with Managed Identity)
@@ -40,8 +40,8 @@ Run the deployment script from this directory:
 ```
 
 This will:
-- Create the resource group (if it doesn't exist)
-- Deploy all resources defined in `main.bicep` using your parameters
+- Create the resource group at the subscription scope
+- Deploy all resources defined in `rg-resources.bicep` into that resource group using your parameters
 
 ### 3. Create Azure AD Enterprise Application
 
@@ -79,7 +79,7 @@ az role assignment create --assignee $identity --role "Storage Blob Data Contrib
 
 #### b. Assign SQL Database Permissions
 
-Grant the managed identity access to the SQL Database. You must connect to the database and run SQL statements to create a **login** and a contained **user**, then assign it the necessary roles.
+Grant the managed identity access to the SQL Database. You must connect to the database and run SQL statements to create a login and a contained user, then assign it the necessary roles.
 
 1. **Get the managed identity's object ID**:
 
