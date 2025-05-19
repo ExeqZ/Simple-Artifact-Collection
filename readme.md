@@ -8,13 +8,14 @@ This project is a **File Upload and Management System** built with Flask and Azu
 1. [Introduction](#introduction)
 2. [Features](#features)
 3. [Technologies Used](#technologies-used)
-4. [List of Required Resources](#list-of-required-resources)
-5. [Manual Steps to Prepare the Environment](#manual-steps-to-prepare-the-environment)
-6. [Project Structure](#project-structure)
-7. [How to Run the Project](#how-to-run-the-project)
-8. [Screenshots](#screenshots)
-9. [Contributing](#contributing)
-10. [License](#license)
+4. [Required Azure Resources](#required-azure-resources)
+5. [Automated Deployment](#automated-deployment)
+6. [Manual Steps to Prepare the Environment](#manual-steps-to-prepare-the-environment)
+7. [Project Structure](#project-structure)
+8. [How to Run the Project](#how-to-run-the-project)
+9. [Screenshots](#screenshots)
+10. [Contributing](#contributing)
+11. [License](#license)
 
 ---
 
@@ -33,6 +34,8 @@ The File Upload and Management System is designed to provide a secure and scalab
   - **Azure SQL Database**: Stores case metadata (case name, container name, secret).
   - **Managed Identity**: Securely connects to Azure SQL Database without storing credentials.
 - **Dynamic UI**: A responsive and interactive user interface built with modern web technologies.
+- **Blob Inventory**: Each container maintains a `.blobinventory` file for fast file hash and metadata lookup.
+- **Automated Resource Deployment**: Bicep templates and PowerShell scripts for full Azure resource provisioning.
 
 ---
 
@@ -44,61 +47,84 @@ The File Upload and Management System is designed to provide a secure and scalab
 - **Microsoft Entra ID (Azure AD)**: Authentication and authorization.
 - **Tailwind CSS**: Modern and responsive UI styling.
 - **Font Awesome**: Free icons for a polished user interface.
+- **Azure Bicep**: Infrastructure as Code for Azure resources.
+- **PowerShell**: Deployment automation.
 
 ---
 
-## List of Required Resources
+## Required Azure Resources
 
 To deploy and run this project, you will need the following Azure resources:
-1. **Azure Web App**: To host the Flask application.
-2. **Azure Blob Storage**: To store uploaded files.
-3. **Azure SQL Database**: To store case metadata.
-4. **Microsoft Entra ID (Azure AD)**: For user authentication.
-5. **Azure Managed Identity**: For secure authentication to Azure SQL Database.
+1. **Azure Resource Group**
+2. **Azure Storage Account** (StorageV2, general purpose v2)
+3. **Azure SQL Database** (Basic, 5 DTU, zone redundant)
+4. **Azure Web App** (App Service Plan B1, with Managed Identity)
+5. **Microsoft Entra ID (Azure AD) Enterprise Application**
+
+---
+
+## Automated Deployment
+
+All required Azure resources can be deployed using the scripts and templates in the [`resource-deployment`](./resource-deployment) folder.
+
+### Steps:
+
+1. **Edit Parameters**  
+   Update `main.parameters.json` in `resource-deployment` with your desired resource names and credentials.
+
+2. **Deploy Azure Resources**  
+   Run the deployment script:
+   ```powershell
+   cd resource-deployment
+   ./deploy.ps1
+   ```
+
+3. **Create Azure AD Enterprise Application**  
+   Run:
+   ```powershell
+   ./create-enterprise-app.ps1
+   ```
+   Save the outputted `CLIENT_ID`, `CLIENT_SECRET`, and `TENANT_ID`.
+
+4. **Set Web App Environment Variables**  
+   Set the following variables in the Azure Portal or via CLI:
+   - `STORAGE_ACCOUNT_URL`
+   - `SQL_SERVER`
+   - `SQL_DATABASE`
+   - `CLIENT_ID`
+   - `CLIENT_SECRET`
+   - `TENANT_ID`
+   - `SECRET_KEY`
+
+   Example:
+   ```sh
+   az webapp config appsettings set --name <webAppName> --resource-group <resourceGroupName> --settings KEY=VALUE ...
+   ```
+
+5. **Assign Permissions**  
+   Assign the Web App's managed identity access to the Storage Account and SQL Database as needed.
+
+For more details, see [`resource-deployment/readme.md`](./resource-deployment/readme.md).
 
 ---
 
 ## Manual Steps to Prepare the Environment
 
-### 1. **Set Up Azure Resources**
-#### a. **Azure Blob Storage**
-- Create a **Storage Account** in Azure.
-- Note the **Storage Account URL** (e.g., `https://<storage_account_name>.blob.core.windows.net`).
+If you want to run the project locally or without automation, follow these steps:
 
-#### b. **Azure SQL Database**
-- Create an **Azure SQL Database**.
-- Configure a **SQL Server** and database (e.g., `CaseManagementDB`).
-- Enable **Azure Active Directory Authentication**.
-- Assign the **Managed Identity** of your Azure Web App the appropriate **Microsoft Entra ID role** to contribute to the database:
-  - Navigate to your **Azure SQL Server** in the Azure Portal.
-  - Under the **Access control (IAM)** section, click **Add role assignment**.
-  - Assign the **SQL DB Contributor** role to the **Managed Identity** of your Azure Web App.
-
-#### c. **Microsoft Entra ID (Azure AD)**
-- Register an **Azure AD Application**.
-- Configure the **Redirect URI** (e.g., `https://<web-app-name>.azurewebsites.net/auth/callback`).
-- Note the **Client ID**, **Client Secret**, and **Tenant ID**.
-
-#### d. **Azure Web App**
-- Create an **Azure Web App**.
-- Enable **System-assigned Managed Identity**.
-
----
-
-### 2. **Prepare the Local Environment**
-#### a. **Clone the Repository**
+### 1. **Clone the Repository**
 ```bash
 git clone <repository-url>
 cd <repository-folder>
 ```
 
-#### b. **Install Dependencies**
+### 2. **Install Dependencies**
 Ensure Python 3.9+ is installed. Install the required Python packages:
 ```bash
 pip install -r requirements.txt
 ```
 
-#### c. **Set Environment Variables**
+### 3. **Set Environment Variables**
 Create a `.env` file in the project root with the following variables:
 ```plaintext
 FLASK_APP=app.py
@@ -109,9 +135,10 @@ SQL_DATABASE=<database-name>
 CLIENT_ID=<azure-ad-client-id>
 CLIENT_SECRET=<azure-ad-client-secret>
 TENANT_ID=<azure-ad-tenant-id>
+SECRET_KEY=<your-random-flask-secret>
 ```
 
-#### d. **Initialize the Database**
+### 4. **Initialize the Database**
 Run the following script to create the `Cases` table in Azure SQL Database:
 ```sql
 CREATE TABLE Cases (
@@ -144,6 +171,12 @@ project0010/
 │   │   └── base.js            # JavaScript for menu toggle
 │   └── images/
 │       └── logo.png           # Application logo
+├── resource-deployment/       # Azure Bicep templates and deployment scripts
+│   ├── main.bicep
+│   ├── main.parameters.json
+│   ├── deploy.ps1
+│   ├── create-enterprise-app.ps1
+│   └── readme.md
 └── .env                       # Environment variables (not included in repo)
 ```
 

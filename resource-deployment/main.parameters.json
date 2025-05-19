@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "value": "westeurope" },
+    "resourceGroupName": { "value": "my-fms-rg" },
+    "storageAccountName": { "value": "myfmsstorageacct" },
+    "sqlServerName": { "value": "myfmssqlserver" },
+    "sqlAdminUsername": { "value": "" },
+    "sqlAdminPassword": { "value": "" },
+    "sqlDatabaseName": { "value": "CaseManagementDB" },
+    "appServicePlanName": { "value": "my-fms-plan" },
+    "webAppName": { "value": "my-fms-webapp" }
+  }
+}
