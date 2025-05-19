@@ -4,6 +4,9 @@ from services.db_service import init_db, get_db_connection
 import os
 import re
 from services.blob_service import blob_service_client, create_container
+import hashlib
+import json
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "default-secret-key")
@@ -30,6 +33,41 @@ if not cursor.fetchone():
 app.register_blueprint(admin.bp)
 app.register_blueprint(auth.bp)
 app.register_blueprint(case.bp)
+
+def load_blobinventory(container_client):
+    inventory_client = container_client.get_blob_client('.blobinventory')
+    if inventory_client.exists():
+        content = inventory_client.download_blob().readall()
+        try:
+            return json.loads(content.decode('utf-8'))
+        except Exception:
+            return []
+    return []
+
+def save_blobinventory(container_client, inventory):
+    inventory_client = container_client.get_blob_client('.blobinventory')
+    inventory_bytes = json.dumps(inventory, indent=2).encode('utf-8')
+    inventory_client.upload_blob(inventory_bytes, overwrite=True)
+
+def update_blobinventory_on_upload(container_client, file, file_hash):
+    inventory = load_blobinventory(container_client)
+    # Remove any existing entry for this file name
+    inventory = [entry for entry in inventory if entry['name'] != file.filename]
+    # Add new entry
+    entry = {
+        "name": file.filename,
+        "type": file.mimetype,
+        "size": file.content_length,
+        "upload_date": datetime.utcnow().isoformat() + "Z",
+        "hash": file_hash
+    }
+    inventory.append(entry)
+    save_blobinventory(container_client, inventory)
+
+def update_blobinventory_on_delete(container_client, filename):
+    inventory = load_blobinventory(container_client)
+    inventory = [entry for entry in inventory if entry['name'] != filename]
+    save_blobinventory(container_client, inventory)
 
 @app.route('/')
 def index():
@@ -62,22 +100,44 @@ def upload_file():
 
     try:
         container_client = blob_service_client.get_container_client(container_name)
+        inventory = load_blobinventory(container_client)
         for file in files:
+            file.seek(0)
+            file_bytes = file.read()
+            file_hash = hashlib.sha256(file_bytes).hexdigest()
+            file.seek(0)  # Reset file pointer for upload
+
+            # Check for hash match in inventory
+            match = next((entry for entry in inventory if entry['hash'] == file_hash), None)
+            if match:
+                # Double check hash with actual blob content
+                blob_client = container_client.get_blob_client(match['name'])
+                if blob_client.exists():
+                    existing_blob_bytes = blob_client.download_blob().readall()
+                    existing_blob_hash = hashlib.sha256(existing_blob_bytes).hexdigest()
+                    if existing_blob_hash == file_hash:
+                        blob_client.upload_blob(file, overwrite=True)
+                        update_blobinventory_on_upload(container_client, file, file_hash)
+                        continue  # File uploaded/overwritten, go to next file
+
+            # If no hash match, handle name collision
             blob_client = container_client.get_blob_client(file.filename)
             if blob_client.exists():
-                existing_blob = blob_client.get_blob_properties()
-                if existing_blob.size == file.content_length:
-                    blob_client.upload_blob(file, overwrite=True)
-                else:
-                    base_name, extension = os.path.splitext(file.filename)
-                    counter = 1
-                    while blob_client.exists():
-                        new_filename = f"{base_name}_{counter}{extension}"
-                        blob_client = container_client.get_blob_client(new_filename)
-                        counter += 1
-                    blob_client.upload_blob(file)
+                base_name, extension = os.path.splitext(file.filename)
+                counter = 1
+                new_filename = f"{base_name}_{counter}{extension}"
+                new_blob_client = container_client.get_blob_client(new_filename)
+                while new_blob_client.exists():
+                    counter += 1
+                    new_filename = f"{base_name}_{counter}{extension}"
+                    new_blob_client = container_client.get_blob_client(new_filename)
+                new_blob_client.upload_blob(file)
+                # Update inventory with new name
+                file.filename = new_filename
+                update_blobinventory_on_upload(container_client, file, file_hash)
             else:
                 blob_client.upload_blob(file)
+                update_blobinventory_on_upload(container_client, file, file_hash)
         return render_template('upload.html', message="Files uploaded successfully", message_type="success")
     except Exception as e:
         return render_template('upload.html', message=f"Error uploading files: {e}", message_type="error")

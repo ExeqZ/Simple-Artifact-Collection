@@ -2,8 +2,29 @@ from flask import Blueprint, render_template, request, jsonify
 from services.db_service import get_db_connection
 from services.blob_service import blob_service_client
 from utils.auth import login_required
+import json
 
 bp = Blueprint('case', __name__, url_prefix='/case')
+
+def load_blobinventory(container_client):
+    inventory_client = container_client.get_blob_client('.blobinventory')
+    if inventory_client.exists():
+        content = inventory_client.download_blob().readall()
+        try:
+            return json.loads(content.decode('utf-8'))
+        except Exception:
+            return []
+    return []
+
+def save_blobinventory(container_client, inventory):
+    inventory_client = container_client.get_blob_client('.blobinventory')
+    inventory_bytes = json.dumps(inventory, indent=2).encode('utf-8')
+    inventory_client.upload_blob(inventory_bytes, overwrite=True)
+
+def update_blobinventory_on_delete(container_client, filename):
+    inventory = load_blobinventory(container_client)
+    inventory = [entry for entry in inventory if entry['name'] != filename]
+    save_blobinventory(container_client, inventory)
 
 @bp.route('/<case_id>', methods=['GET'])
 @login_required
@@ -80,6 +101,7 @@ def delete_file(case_id, filename):
         blob_client = container_client.get_blob_client(filename)
         if blob_client.exists():
             blob_client.delete_blob()
+            update_blobinventory_on_delete(container_client, filename)
             return jsonify({"message": "File deleted successfully."}), 200
         else:
             return jsonify({"error": "File not found."}), 404
