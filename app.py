@@ -51,16 +51,17 @@ def save_blobinventory(container_client, inventory):
     inventory_bytes = json.dumps(inventory, indent=2).encode('utf-8')
     inventory_client.upload_blob(inventory_bytes, overwrite=True)
 
-def update_blobinventory_on_upload(container_client, file, file_hash):
+def update_blobinventory_on_upload(container_client, file, unzipped_hash, zipped_hash):
     inventory = load_blobinventory(container_client)
     # Remove any existing entry for this file name
     inventory = [entry for entry in inventory if entry['name'] != file.filename]
     # Add new entry
     entry = {
         "name": file.filename,
+        "unzipped_hash": unzipped_hash,
+        "zipped_hash": zipped_hash,
         "size": file.content_length,
-        "upload_date": datetime.utcnow().isoformat() + "Z",
-        "hash": file_hash
+        "upload_date": datetime.utcnow().isoformat() + "Z"
     }
     inventory.append(entry)
     save_blobinventory(container_client, inventory)
@@ -112,7 +113,8 @@ def upload_file():
     try:
         container_client = blob_service_client.get_container_client(container_name)
         inventory = load_blobinventory(container_client)
-        inventory_hash_map = {entry['hash']: entry for entry in inventory}
+        inventory_hash_map = {entry['unzipped_hash']: entry for entry in inventory}
+        zipped_hash_map = {entry['zipped_hash']: entry for entry in inventory}
         updated_inventory = inventory.copy()
 
         duplicate_files = []
@@ -121,20 +123,23 @@ def upload_file():
         for file in files:
             file.seek(0)
             file_bytes = file.read()
-            file_hash = hashlib.sha256(file_bytes).hexdigest()
-            file.seek(0)  # Reset file pointer for further processing
+            unzipped_hash = hashlib.sha256(file_bytes).hexdigest()
+            file.seek(0)  # Reset file pointer for compression
+
+            # Compress and secure the file
+            compressed_file = compress_and_secure_file(file)
+            compressed_file.seek(0)
+            compressed_bytes = compressed_file.read()
+            zipped_hash = hashlib.sha256(compressed_bytes).hexdigest()
 
             # Check if the file already exists in the inventory
-            if file_hash in inventory_hash_map:
-                existing_entry = inventory_hash_map[file_hash]
+            if unzipped_hash in inventory_hash_map or zipped_hash in zipped_hash_map:
+                existing_entry = inventory_hash_map.get(unzipped_hash) or zipped_hash_map.get(zipped_hash)
                 blob_client = container_client.get_blob_client(existing_entry['name'])
                 if blob_client.exists():
                     # File already exists, skip re-upload
                     duplicate_files.append(file.filename)
                     continue
-
-            # Compress and secure the file
-            compressed_file = compress_and_secure_file(file)
 
             # Handle name collision
             original_filename = file.filename + ".zip"
@@ -153,14 +158,15 @@ def upload_file():
                 file.filename = original_filename
 
             # Upload the file
-            blob_client.upload_blob(compressed_file)
+            blob_client.upload_blob(io.BytesIO(compressed_bytes))
 
             # Add the file to the updated inventory
             updated_inventory.append({
                 "name": file.filename,
+                "unzipped_hash": unzipped_hash,
+                "zipped_hash": zipped_hash,
                 "size": len(file_bytes),
-                "upload_date": datetime.utcnow().isoformat() + "Z",
-                "hash": file_hash
+                "upload_date": datetime.utcnow().isoformat() + "Z"
             })
             uploaded_files.append(file.filename)
 
