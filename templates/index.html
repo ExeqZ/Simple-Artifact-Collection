@@ -4,14 +4,14 @@
 
 {% block content %}
 <div class="text-center">
-  <h1 class="text-4xl font-bold text-blue-600 mb-4">Welcome to the File Management System</h1>
+  <h1 class="text-4xl font-bold text-blue-600 mb-4">Welcome to Simple Artifact Collection</h1>
   {% if session.get('user') %}
-    <p class="text-lg mb-6">Hello, {{ session['user']['name'] }}! Use this platform to upload and manage your files securely.</p>
+    <p class="text-lg mb-6">Hello, {{ session['user']['name'] }}! Use this platform to upload and manage your artifacts securely.</p>
   {% else %}
-    <p class="text-lg mb-6">Use this platform to upload and manage your files securely. Admins can access advanced management features.</p>
+    <p class="text-lg mb-6">Use this platform to upload and manage your artifacts securely. Admins can access advanced management features.</p>
   {% endif %}
   <div class="flex justify-center space-x-4">
-    <a href="{{ url_for('upload_page') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload Files</a>
+    <a href="{{ url_for('upload_page') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Upload Artifacts</a>
     <a href="{{ url_for('admin.admin_portal') }}" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Admin Portal</a>
   </div>
 </div>

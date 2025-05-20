@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Upload Files{% endblock %}
+{% block title %}Upload Artifacts{% endblock %}
 
 {% block content %}
 <div class="max-w-lg mx-auto bg-white shadow-md rounded p-6">
-  <h1 class="text-2xl font-bold mb-4">Upload Files</h1>
+  <h1 class="text-2xl font-bold mb-4">Upload Artifacts</h1>
   {% if message %}
   <div class="alert {{ 'alert-success' if message_type == 'success' else 'alert-error' }} mb-4" onclick="this.remove()">
     {{ message }}
