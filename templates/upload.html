@@ -21,6 +21,7 @@
         title="Format: xxxx-xxxx-xxxx-xxxx"
         required
         class="block w-full border border-gray-300 p-2 rounded mb-4"
+        value="{{ request.args.get('secret', '') }}"
     >
     <label for="files" class="block text-lg font-medium mb-2">Select Files:</label>
     <input

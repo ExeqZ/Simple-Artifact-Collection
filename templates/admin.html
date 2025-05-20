@@ -42,6 +42,10 @@
                     <img src="{{ url_for('static', filename='images/refresh-ccw.svg') }}" alt="Rotate Secret" class="h-5 w-5">
                     <span>Rotate Secret</span>
                 </button>
+                <button onclick="generateLink('{{ case.secret }}')" class="btn-secondary flex items-center space-x-2">
+                    <i class="fas fa-link"></i>
+                    <span>Generate Link</span>
+                </button>
                 {% endif %}
             </td>
         </tr>
@@ -104,6 +108,17 @@
         alert("An error occurred while updating blob inventories.");
       }
     }
+  }
+
+  function generateLink(secret) {
+    const baseUrl = "{{ url_for('upload_page', _external=True) }}";
+    const link = `${baseUrl}?secret=${encodeURIComponent(secret)}`;
+    navigator.clipboard.writeText(link).then(() => {
+      alert("Upload link copied to clipboard!");
+    }).catch(err => {
+      console.error("Failed to copy link: ", err);
+      alert("Failed to copy link. Please try again.");
+    });
   }
 </script>
 {% endblock %}
