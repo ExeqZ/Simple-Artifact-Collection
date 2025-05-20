@@ -112,46 +112,56 @@ def upload_file():
     try:
         container_client = blob_service_client.get_container_client(container_name)
         inventory = load_blobinventory(container_client)
+        inventory_hash_map = {entry['hash']: entry for entry in inventory}
+        updated_inventory = inventory.copy()
+
         for file in files:
             file.seek(0)
             file_bytes = file.read()
             file_hash = hashlib.sha256(file_bytes).hexdigest()
-            file.seek(0)  # Reset file pointer for compression
+            file.seek(0)  # Reset file pointer for further processing
+
+            # Check if the file already exists in the inventory
+            if file_hash in inventory_hash_map:
+                existing_entry = inventory_hash_map[file_hash]
+                blob_client = container_client.get_blob_client(existing_entry['name'])
+                if blob_client.exists():
+                    # File already exists, skip re-upload
+                    continue
 
             # Compress and secure the file
             compressed_file = compress_and_secure_file(file)
 
-            # Check for hash match in inventory
-            match = next((entry for entry in inventory if entry['hash'] == file_hash), None)
-            if match:
-                # Double check hash with actual blob content
-                blob_client = container_client.get_blob_client(match['name'])
-                if blob_client.exists():
-                    existing_blob_bytes = blob_client.download_blob().readall()
-                    existing_blob_hash = hashlib.sha256(existing_blob_bytes).hexdigest()
-                    if existing_blob_hash == file_hash:
-                        blob_client.upload_blob(compressed_file, overwrite=True)
-                        update_blobinventory_on_upload(container_client, file, file_hash)
-                        continue  # File uploaded/overwritten, go to next file
-
-            # If no hash match, handle name collision
-            blob_client = container_client.get_blob_client(file.filename + ".zip")
+            # Handle name collision
+            original_filename = file.filename + ".zip"
+            blob_client = container_client.get_blob_client(original_filename)
             if blob_client.exists():
                 base_name, extension = os.path.splitext(file.filename)
                 counter = 1
-                new_filename = f"{base_name}_{counter}{extension}.zip"
-                new_blob_client = container_client.get_blob_client(new_filename)
-                while new_blob_client.exists():
-                    counter += 1
+                while True:
                     new_filename = f"{base_name}_{counter}{extension}.zip"
-                    new_blob_client = container_client.get_blob_client(new_filename)
-                new_blob_client.upload_blob(compressed_file)
-                # Update inventory with new name
+                    blob_client = container_client.get_blob_client(new_filename)
+                    if not blob_client.exists():
+                        break
+                    counter += 1
                 file.filename = new_filename
-                update_blobinventory_on_upload(container_client, file, file_hash)
             else:
-                blob_client.upload_blob(compressed_file)
-                update_blobinventory_on_upload(container_client, file, file_hash)
+                file.filename = original_filename
+
+            # Upload the file
+            blob_client.upload_blob(compressed_file)
+
+            # Add the file to the updated inventory
+            updated_inventory.append({
+                "name": file.filename,
+                "size": len(file_bytes),
+                "upload_date": datetime.utcnow().isoformat() + "Z",
+                "hash": file_hash
+            })
+
+        # Save the updated inventory
+        save_blobinventory(container_client, updated_inventory)
+
         return render_template('upload.html', message="Files uploaded successfully", message_type="success")
     except Exception as e:
         return render_template('upload.html', message=f"Error uploading files: {e}", message_type="error")
