@@ -7,6 +7,8 @@ from services.blob_service import blob_service_client, create_container
 import hashlib
 import json
 from datetime import datetime
+import zipfile
+import io
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "default-secret-key")
@@ -56,7 +58,6 @@ def update_blobinventory_on_upload(container_client, file, file_hash):
     # Add new entry
     entry = {
         "name": file.filename,
-        "type": file.mimetype,
         "size": file.content_length,
         "upload_date": datetime.utcnow().isoformat() + "Z",
         "hash": file_hash
@@ -68,6 +69,16 @@ def update_blobinventory_on_delete(container_client, filename):
     inventory = load_blobinventory(container_client)
     inventory = [entry for entry in inventory if entry['name'] != filename]
     save_blobinventory(container_client, inventory)
+
+def compress_and_secure_file(file, password="infected"):
+    """Compress and secure the file with a password."""
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        zip_info = zipfile.ZipInfo(file.filename)
+        zip_file.writestr(zip_info, file.read(), compress_type=zipfile.ZIP_DEFLATED)
+        zip_file.setpassword(password.encode())
+    zip_buffer.seek(0)
+    return zip_buffer
 
 @app.route('/')
 def index():
@@ -105,7 +116,10 @@ def upload_file():
             file.seek(0)
             file_bytes = file.read()
             file_hash = hashlib.sha256(file_bytes).hexdigest()
-            file.seek(0)  # Reset file pointer for upload
+            file.seek(0)  # Reset file pointer for compression
+
+            # Compress and secure the file
+            compressed_file = compress_and_secure_file(file)
 
             # Check for hash match in inventory
             match = next((entry for entry in inventory if entry['hash'] == file_hash), None)
@@ -116,27 +130,27 @@ def upload_file():
                     existing_blob_bytes = blob_client.download_blob().readall()
                     existing_blob_hash = hashlib.sha256(existing_blob_bytes).hexdigest()
                     if existing_blob_hash == file_hash:
-                        blob_client.upload_blob(file, overwrite=True)
+                        blob_client.upload_blob(compressed_file, overwrite=True)
                         update_blobinventory_on_upload(container_client, file, file_hash)
                         continue  # File uploaded/overwritten, go to next file
 
             # If no hash match, handle name collision
-            blob_client = container_client.get_blob_client(file.filename)
+            blob_client = container_client.get_blob_client(file.filename + ".zip")
             if blob_client.exists():
                 base_name, extension = os.path.splitext(file.filename)
                 counter = 1
-                new_filename = f"{base_name}_{counter}{extension}"
+                new_filename = f"{base_name}_{counter}{extension}.zip"
                 new_blob_client = container_client.get_blob_client(new_filename)
                 while new_blob_client.exists():
                     counter += 1
-                    new_filename = f"{base_name}_{counter}{extension}"
+                    new_filename = f"{base_name}_{counter}{extension}.zip"
                     new_blob_client = container_client.get_blob_client(new_filename)
-                new_blob_client.upload_blob(file)
+                new_blob_client.upload_blob(compressed_file)
                 # Update inventory with new name
                 file.filename = new_filename
                 update_blobinventory_on_upload(container_client, file, file_hash)
             else:
-                blob_client.upload_blob(file)
+                blob_client.upload_blob(compressed_file)
                 update_blobinventory_on_upload(container_client, file, file_hash)
         return render_template('upload.html', message="Files uploaded successfully", message_type="success")
     except Exception as e:

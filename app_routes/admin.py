@@ -147,3 +147,21 @@ def update_all_blobinventories():
         except Exception:
             pass
     return f"Updated blob inventory for: {', '.join(updated)}", 200
+
+@bp.route('/rotate_secret/<container_name>', methods=['POST'])
+@login_required
+def rotate_secret(container_name):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Generate a new secret
+        new_secret = generate_secret()
+
+        # Update the secret in the database
+        cursor.execute("UPDATE Cases SET secret = ? WHERE container_name = ?", (new_secret, container_name))
+        conn.commit()
+
+        return "Secret rotated successfully.", 200
+    except Exception as e:
+        return f"Error rotating secret: {e}", 500
