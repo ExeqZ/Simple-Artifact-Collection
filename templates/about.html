@@ -4,36 +4,31 @@
 
 {% block content %}
 <div class="text-center">
-  <h1 class="text-4xl font-bold text-blue-600 mb-4">About File Management System</h1>
+  <h1 class="text-4xl font-bold text-blue-600 mb-4">About Simple Artifact Collection</h1>
   <p class="text-lg mb-6">
-    The File Management System is a secure and scalable platform for uploading, managing, and organizing files. 
+    Simple Artifact Collection is a secure and scalable platform for uploading, managing, and organizing artifacts. 
     It leverages Azure services for storage and authentication, ensuring a modern and reliable experience.
   </p>
   <h2 class="text-2xl font-semibold mb-4">Features</h2>
   <ul class="list-disc list-inside text-left max-w-2xl mx-auto mb-6">
     <li><strong>File Upload Portal:</strong> Users can upload files to specific cases using a secret key.</li>
-    <li><strong>Admin Portal:</strong> Admins can create cases, view case details, and manage files in blob containers.</li>
+    <li><strong>Admin Portal:</strong> Admins can create cases, view case details, rotate secrets, and manage files in blob containers.</li>
+    <li><strong>Secure File Storage:</strong> Files are compressed and password-protected before being uploaded to Azure Blob Storage.</li>
     <li><strong>Azure Integration:</strong> 
       <ul class="list-disc list-inside ml-6">
         <li>Azure Blob Storage for secure file storage.</li>
         <li>Azure SQL Database for case metadata storage.</li>
-        <li>Managed Identity for secure authentication to Azure services.</li>
+        <li>Microsoft Entra ID (Azure AD) for authentication.</li>
       </ul>
     </li>
     <li><strong>Dynamic UI:</strong> A responsive and interactive user interface built with modern web technologies.</li>
-  </ul>
-  <h2 class="text-2xl font-semibold mb-4">Technologies Used</h2>
-  <ul class="list-disc list-inside text-left max-w-2xl mx-auto mb-6">
-    <li>Flask (Python) for the backend.</li>
-    <li>Azure Blob Storage and Azure SQL Database for storage and metadata management.</li>
-    <li>Microsoft Entra ID (Azure AD) for authentication.</li>
-    <li>Tailwind CSS and Font Awesome for a modern and responsive UI.</li>
+    <li><strong>Generate Upload Links:</strong> Admins can generate pre-filled upload links for specific cases.</li>
   </ul>
   <h2 class="text-2xl font-semibold mb-4">How It Works</h2>
   <p class="text-lg mb-6">
     Users upload files to specific cases using a secret key. Admins can create and manage cases, 
-    which are mapped to Azure Blob Storage containers. The system ensures secure file storage and 
-    metadata management using Azure services.
+    which are mapped to Azure Blob Storage containers. Files are compressed and secured with a password before being stored.
+    The system ensures secure file storage and metadata management using Azure services.
   </p>
 </div>
 {% endblock %}
