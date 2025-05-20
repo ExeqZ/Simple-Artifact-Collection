@@ -81,6 +81,17 @@ def compress_and_secure_file(file, password="infected"):
     zip_buffer.seek(0)
     return zip_buffer
 
+def is_compressed_with_password(file, password="infected"):
+    """Check if the file is a ZIP file secured with the given password."""
+    try:
+        with zipfile.ZipFile(file) as zip_file:
+            # Test if the file can be opened with the password
+            zip_file.setpassword(password.encode())
+            zip_file.testzip()  # Will raise an exception if the password is incorrect
+        return True
+    except (zipfile.BadZipFile, RuntimeError, zipfile.LargeZipFile):
+        return False
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -124,13 +135,20 @@ def upload_file():
             file.seek(0)
             file_bytes = file.read()
             unzipped_hash = hashlib.sha256(file_bytes).hexdigest()
-            file.seek(0)  # Reset file pointer for compression
+            file.seek(0)  # Reset file pointer for further processing
 
-            # Compress and secure the file
-            compressed_file = compress_and_secure_file(file)
-            compressed_file.seek(0)
-            compressed_bytes = compressed_file.read()
-            zipped_hash = hashlib.sha256(compressed_bytes).hexdigest()
+            # Check if the file is already compressed with the password
+            if is_compressed_with_password(file):
+                compressed_file = file  # Use the file as-is
+                compressed_file.seek(0)
+                compressed_bytes = compressed_file.read()
+                zipped_hash = hashlib.sha256(compressed_bytes).hexdigest()
+            else:
+                # Compress and secure the file
+                compressed_file = compress_and_secure_file(file)
+                compressed_file.seek(0)
+                compressed_bytes = compressed_file.read()
+                zipped_hash = hashlib.sha256(compressed_bytes).hexdigest()
 
             # Check if the file already exists in the inventory
             if unzipped_hash in inventory_hash_map or zipped_hash in zipped_hash_map:
