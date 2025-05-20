@@ -80,17 +80,6 @@ def compress_and_secure_file(file, password="infected"):
     zip_buffer.seek(0)
     return zip_buffer
 
-def is_compressed_with_password(file, password="infected"):
-    """Check if the file is a ZIP file secured with the given password."""
-    try:
-        with zipfile.ZipFile(file) as zip_file:
-            # Test if the file can be opened with the password
-            zip_file.setpassword(password.encode())
-            zip_file.testzip()  # Will raise an exception if the password is incorrect
-        return True
-    except (zipfile.BadZipFile, RuntimeError, zipfile.LargeZipFile):
-        return False
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -127,9 +116,12 @@ def upload_file():
             file.seek(0)
             file_bytes = file.read()
             file_hash = hashlib.sha256(file_bytes).hexdigest()
-            file.seek(0)  # Reset file pointer for further processing
+            file.seek(0)  # Reset file pointer for compression
 
-            # Check for hash match in inventory before compression
+            # Compress and secure the file
+            compressed_file = compress_and_secure_file(file)
+
+            # Check for hash match in inventory
             match = next((entry for entry in inventory if entry['hash'] == file_hash), None)
             if match:
                 # Double check hash with actual blob content
@@ -138,17 +130,11 @@ def upload_file():
                     existing_blob_bytes = blob_client.download_blob().readall()
                     existing_blob_hash = hashlib.sha256(existing_blob_bytes).hexdigest()
                     if existing_blob_hash == file_hash:
-                        blob_client.upload_blob(file, overwrite=True)
+                        blob_client.upload_blob(compressed_file, overwrite=True)
                         update_blobinventory_on_upload(container_client, file, file_hash)
                         continue  # File uploaded/overwritten, go to next file
 
-            # Compress and secure the file if no match is found
-            if is_compressed_with_password(file):
-                compressed_file = file  # Use the file as-is
-            else:
-                compressed_file = compress_and_secure_file(file)
-
-            # Handle name collision and upload the file
+            # If no hash match, handle name collision
             blob_client = container_client.get_blob_client(file.filename + ".zip")
             if blob_client.exists():
                 base_name, extension = os.path.splitext(file.filename)
