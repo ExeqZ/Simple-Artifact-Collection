@@ -171,6 +171,12 @@ button img {
     border: 1px solid #f5c6cb;
 }
 
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
 #drop-area {
     transition: background-color 0.2s ease-in-out;
 }

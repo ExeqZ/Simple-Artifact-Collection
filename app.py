@@ -115,6 +115,9 @@ def upload_file():
         inventory_hash_map = {entry['hash']: entry for entry in inventory}
         updated_inventory = inventory.copy()
 
+        duplicate_files = []
+        uploaded_files = []
+
         for file in files:
             file.seek(0)
             file_bytes = file.read()
@@ -127,6 +130,7 @@ def upload_file():
                 blob_client = container_client.get_blob_client(existing_entry['name'])
                 if blob_client.exists():
                     # File already exists, skip re-upload
+                    duplicate_files.append(file.filename)
                     continue
 
             # Compress and secure the file
@@ -158,11 +162,27 @@ def upload_file():
                 "upload_date": datetime.utcnow().isoformat() + "Z",
                 "hash": file_hash
             })
+            uploaded_files.append(file.filename)
 
         # Save the updated inventory
         save_blobinventory(container_client, updated_inventory)
 
-        return render_template('upload.html', message="Files uploaded successfully", message_type="success")
+        if uploaded_files and not duplicate_files:
+            return render_template('upload.html', message="Files uploaded successfully", message_type="success")
+        elif duplicate_files and not uploaded_files:
+            return render_template(
+                'upload.html',
+                message=f"The following files were not uploaded because duplicates already exist: {', '.join(duplicate_files)}",
+                message_type="warning"
+            )
+        elif uploaded_files and duplicate_files:
+            return render_template(
+                'upload.html',
+                message=f"Files uploaded successfully: {', '.join(uploaded_files)}. The following files were not uploaded because duplicates already exist: {', '.join(duplicate_files)}",
+                message_type="warning"
+            )
+        else:
+            return render_template('upload.html', message="No files were uploaded.", message_type="warning")
     except Exception as e:
         return render_template('upload.html', message=f"Error uploading files: {e}", message_type="error")
 
