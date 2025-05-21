@@ -1,6 +1,6 @@
-# File Upload and Management System
+# Simple Artifact Collection
 
-This project is a **File Upload and Management System** built with Flask and Azure services. It allows users to upload files to Azure Blob Storage, manage cases with dedicated blob containers, and provides an admin portal for case management. The system uses **Azure SQL Database** for storing case metadata and **Managed Identity** for secure authentication.
+This project is **Simple Artifact Collection**, built with Flask and Azure services. It allows users to upload files to Azure Blob Storage, manage cases with dedicated blob containers, and provides an admin portal for case management. The system uses **Azure SQL Database** for storing case metadata and **Managed Identity** for secure authentication.
 
 ---
 
@@ -21,7 +21,7 @@ This project is a **File Upload and Management System** built with Flask and Azu
 
 ## Introduction
 
-The File Upload and Management System is designed to provide a secure and scalable platform for uploading, managing, and organizing files. It leverages Azure services for storage and authentication, ensuring a modern and reliable experience.
+Simple Artifact Collection is designed to provide a secure and scalable platform for uploading, managing, and organizing files. It leverages Azure services for storage and authentication, ensuring a modern and reliable experience.
 
 ---
 

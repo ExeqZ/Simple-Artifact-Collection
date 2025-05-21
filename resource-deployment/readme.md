@@ -1,6 +1,6 @@
-# Azure Resource Deployment for File Management System
+# Azure Resource Deployment for Simple Artifact Collection
 
-This directory contains all necessary Bicep templates and scripts to deploy the required Azure resources for the File Management System.
+This directory contains all necessary Bicep templates and scripts to deploy the required Azure resources for **Simple Artifact Collection**.
 
 ---
 
