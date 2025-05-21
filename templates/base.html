@@ -21,7 +21,9 @@
       </div>
       <nav class="hidden md:flex space-x-4">
         <a href="{{ url_for('index') }}" class="hover:underline">Home</a>
-        <a href="{{ url_for('admin.admin_portal') }}" class="hover:underline">Admin Portal</a>
+        {% if session.get('user') %}
+          <a href="{{ url_for('admin.admin_portal') }}" class="hover:underline">Admin Portal</a>
+        {% endif %}
         <a href="{{ url_for('upload_page') }}" class="hover:underline">Upload</a>
         <a href="{{ url_for('about') }}" class="hover:underline">About</a>
         {% if session.get('user') %}
@@ -36,7 +38,9 @@
     </div>
     <nav class="menu hidden bg-blue-700 md:hidden">
       <a href="{{ url_for('index') }}" class="block px-4 py-2 hover:bg-blue-800">Home</a>
-      <a href="{{ url_for('admin.admin_portal') }}" class="block px-4 py-2 hover:bg-blue-800">Admin Portal</a>
+      {% if session.get('user') %}
+        <a href="{{ url_for('admin.admin_portal') }}" class="block px-4 py-2 hover:bg-blue-800">Admin Portal</a>
+      {% endif %}
       <a href="{{ url_for('upload_page') }}" class="block px-4 py-2 hover:bg-blue-800">Upload</a>
       <a href="{{ url_for('about') }}" class="block px-4 py-2 hover:bg-blue-800">About</a>
       {% if session.get('user') %}
