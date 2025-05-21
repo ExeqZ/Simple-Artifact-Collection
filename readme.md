@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="static/images/data-analysis-icon.png" alt="Simple Artifact Collection Icon" width="120" height="120">
+</p>
+
 # Simple Artifact Collection
 
 This project is **Simple Artifact Collection**, built with Flask and Azure services. It allows users to upload files to Azure Blob Storage, manage cases with dedicated blob containers, and provides an admin portal for case management. The system uses **Azure SQL Database** for storing case metadata and **Managed Identity** for secure authentication.
